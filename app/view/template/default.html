@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>
+    <$ ctx.app.config.appTitle $>
+  </title>
+
+
+  <!-- 加载第三方库CSS >>>>>>>>>>>>> -->
+  <link href="/<$ ctx.app.config.appId $>/public/lib/vuetify/materialdesignicons.min.css" rel="stylesheet">
+  <link href="/<$ ctx.app.config.appId $>/public/lib/vuetify/vuetify.min.css" rel="stylesheet">
+  <!-- <<<<<<<<<<<<< 加载第三方库CSS -->
+
+  <!-- 加载第三方库JS >>>>>>>>>>>>> -->
+  <script src="/<$ ctx.app.config.appId $>/public/lib/lodash/lodash.min.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/lib/dayjs/dayjs.min.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/lib/axios/axios.min.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/lib/vue/vue.min.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/lib/vuetify/vuetify.min.js"></script>
+  <!-- <<<<<<<<<<<<< 加载第三方库JS -->
+
+  {% block htmlHead %}
+  {% endblock %}
+
+
+  <!-- 引入 Tailwind CSS -->
+  <script src="/<$ ctx.app.config.appId $>/public/js/tailwindcss.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/js/tailwindcss.config.js"></script>
+  <!-- 引入 lodash -->
+  <script src="/<$ ctx.app.config.appId $>/public/js/lodash.min.js"></script>
+  <!-- 引入字体图标 -->
+  <link rel="stylesheet" href="/<$ ctx.app.config.appId $>/public/css/font-awesome.min.css">
+  <!-- 引入 marked 用于 Markdown 渲染 -->
+  <script src="/<$ ctx.app.config.appId $>/public/js/marked.min.js"></script>
+  <!-- 引入 Markdown 工具类 -->
+  <script src="/<$ ctx.app.config.appId $>/public/js/markdownUtils.js"></script>
+  <script src="/<$ ctx.app.config.appId $>/public/js/axios.min.js"></script>
+  <!-- 引入 Tribute.js 用于@提及功能 -->
+  <script src="/<$ ctx.app.config.appId $>/public/js/tribute.min.js"></script>
+  <link rel="stylesheet" href="/<$ ctx.app.config.appId $>/public/css/tribute.min.css">
+  
+  <!-- 引入自定义组件 -->
+  <link rel="stylesheet" href="/<$ ctx.app.config.appId $>/public/css/style.css">
+  
+  <!-- Vuetify主题配置 -->
+  <script>
+    // 定义Vuetify主题
+    const vuetifyThemeConfig = {
+      themes: {
+        light: {
+          primary: '#10a37f',
+          secondary: '#424242',
+          accent: '#82B1FF',
+          error: '#FF5252',
+          info: '#2196F3',
+          success: '#4CAF50',
+          warning: '#FFC107',
+          background: '#F5F5F5'
+        },
+        dark: {
+          primary: '#10a37f',
+          secondary: '#424242',
+          accent: '#82B1FF',
+          error: '#FF5252',
+          info: '#2196F3',
+          success: '#4CAF50',
+          warning: '#FFC107',
+          background: '#121212'
+        }
+      }
+    };
+  </script>
+</head>
+
+<body>
+
+  {% block vueTemplate %}
+  {% endblock %}
+
+  <!-- 加载工具脚本 >>>>>>>>>>>>> -->
+  {% include 'utility/jianghuJs/prepareAppInfoV4.html' %}
+  {% include 'utility/jianghuJs/prepareUserInfoV4.html' %}
+  {% include 'utility/jianghuJs/jianghuAxiosV4.html' %}
+  {% include 'utility/jianghuJs/htmlErrorCollectionV4.html' %}
+  {% include 'utility/jianghuJs/jianghuDisplayTextV4.html' %}
+  {% include 'utility/jianghuJs/uiActionV4.1.html' %}
+  {% include 'common/jianghuJs/bugfixTableWheelEvent.html' %}
+  {% include 'common/jianghuJs/bugfixDrawerOutsideClick.html' %}
+  {% include 'common/jianghuJs/fixedTableColV4.html' %}
+  <!-- <<<<<<<<<<<<< 加载工具脚本 -->
+
+  <!-- 加载全局组件 >>>>>>>>>>>>> -->
+  {% include 'component/jianghuJs/jhToastV4.html' %}
+  {% include 'component/jianghuJs/jhMaskV4.html' %}
+  {% include 'component/jianghuJs/jhMenuV4.html' %}
+  {% include 'component/jianghuJs/jhConfirmDialogV4.html' %}
+  <!-- <<<<<<<<<<<<< 加载全局组件 -->
+
+  {% block vueScript %}
+  {% endblock %}
+</body>
+
+</html>

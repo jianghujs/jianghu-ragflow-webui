@@ -1,0 +1,38 @@
+{
+  "name": "_xiaoxun_chat_jianghu",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "egg": {
+    "declarations": true,
+    "framework": "@jianghujs/jianghu"
+  },
+  "dependencies": {
+    "@jianghujs/jianghu": "4.0.43",
+    "egg": "^2.15.1",
+    "egg-scripts": "^2.11.0"
+  },
+  "devDependencies": {
+    "autod": "^3.0.1",
+    "autod-egg": "^1.1.0",
+    "dotenv": "^16.5.0",
+    "egg-bin": "^4.11.0",
+    "egg-mock": "^3.21.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "start": "egg-scripts start --daemon --port=7708 --title=_xiaoxun_chat_jianghu",
+    "stop": "egg-scripts stop --title=_xiaoxun_chat_jianghu",
+    "dev": "egg-bin dev --port=7708",
+    
+    "chunkImportOfxiaoxunV5": "node script/chunkImportOfxiaoxunV5.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jianghujs/_xiaoxun_chat_jianghu.git"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

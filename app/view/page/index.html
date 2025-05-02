@@ -1,0 +1,1649 @@
+{% extends 'template/default.html'%}
+{% block vueTemplate %}
+<script type="text/html" id="app-template">
+    <div>
+        <v-app mobile-breakpoint="sm">
+    
+            <div class="app-container">
+                <!-- 侧边栏 -->
+            <v-navigation-drawer 
+              class="sidebar overflow-hidden" 
+              v-model="sidebarVisible"
+              :temporary="isMobile"
+              :permanent="!isMobile"
+              app
+              mobile-breakpoint="sm"
+              :mini-variant="sidebarCollapsed && !isMobile"
+              :mini-variant-width="0"
+              :style="isMobile ? {} : {transform: sidebarVisible ? 'none' : 'translateX(-100%)'}"
+            >
+                <!-- 侧边栏头部 -->
+                <div class="sidebar-header">
+                    <div class="flex flex-1 items-center">
+                        <button class="sidebar-logo-btn sidebar-action-btn" title="折叠侧边栏"
+                            @click="toggleSidebarCollapse">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                class="icon-xl-heavy">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M8.85719 3L13.5 3C14.0523 3 14.5 3.44772 14.5 4C14.5 4.55229 14.0523 5 13.5 5H11.5V19H15.1C16.2366 19 17.0289 18.9992 17.6458 18.9488C18.2509 18.8994 18.5986 18.8072 18.862 18.673C19.4265 18.3854 19.8854 17.9265 20.173 17.362C20.3072 17.0986 20.3994 16.7509 20.4488 16.1458C20.4992 15.5289 20.5 14.7366 20.5 13.6V11.5C20.5 10.9477 20.9477 10.5 21.5 10.5C22.0523 10.5 22.5 10.9477 22.5 11.5V13.6428C22.5 14.7266 22.5 15.6008 22.4422 16.3086C22.3826 17.0375 22.2568 17.6777 21.955 18.27C21.4757 19.2108 20.7108 19.9757 19.77 20.455C19.1777 20.7568 18.5375 20.8826 17.8086 20.9422C17.1008 21 16.2266 21 15.1428 21H8.85717C7.77339 21 6.89925 21 6.19138 20.9422C5.46253 20.8826 4.82234 20.7568 4.23005 20.455C3.28924 19.9757 2.52433 19.2108 2.04497 18.27C1.74318 17.6777 1.61737 17.0375 1.55782 16.3086C1.49998 15.6007 1.49999 14.7266 1.5 13.6428V10.3572C1.49999 9.27341 1.49998 8.39926 1.55782 7.69138C1.61737 6.96253 1.74318 6.32234 2.04497 5.73005C2.52433 4.78924 3.28924 4.02433 4.23005 3.54497C4.82234 3.24318 5.46253 3.11737 6.19138 3.05782C6.89926 2.99998 7.77341 2.99999 8.85719 3ZM9.5 19V5H8.9C7.76339 5 6.97108 5.00078 6.35424 5.05118C5.74907 5.10062 5.40138 5.19279 5.13803 5.32698C4.57354 5.6146 4.1146 6.07354 3.82698 6.63803C3.69279 6.90138 3.60062 7.24907 3.55118 7.85424C3.50078 8.47108 3.5 9.26339 3.5 10.4V13.6C3.5 14.7366 3.50078 15.5289 3.55118 16.1458C3.60062 16.7509 3.69279 17.0986 3.82698 17.362C4.1146 17.9265 4.57354 18.3854 5.13803 18.673C5.40138 18.8072 5.74907 18.8994 6.35424 18.9488C6.97108 18.9992 7.76339 19 8.9 19H9.5ZM5 8.5C5 7.94772 5.44772 7.5 6 7.5H7C7.55229 7.5 8 7.94772 8 8.5C8 9.05229 7.55229 9.5 7 9.5H6C5.44772 9.5 5 9.05229 5 8.5ZM5 12C5 11.4477 5.44772 11 6 11H7C7.55229 11 8 11.4477 8 12C8 12.5523 7.55229 13 7 13H6C5.44772 13 5 12.5523 5 12Z"
+                                    fill="currentColor"></path>
+                                <circle cx="20" cy="5" r="4" fill="#0285FF"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="sidebar-action-btn new-chat-btn" @click="clearSessionId">
+                        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.10999 27C8.92999 27 8.76001 26.96 8.60001 26.9C8.43001 26.83 8.29 26.74 8.16 26.61C8.03 26.49 7.94 26.3499 7.87 26.1899C7.79999 26.0299 7.76001 25.8599 7.76001 25.6899L7.73001 23.04C7.34001 22.98 6.95001 22.8799 6.57001 22.7599C6.19001 22.6299 5.83001 22.48 5.48001 22.29C5.13001 22.1 4.79999 21.88 4.48999 21.63C4.17999 21.39 3.89 21.1199 3.63 20.82C3.37 20.52 3.13999 20.21 2.92999 19.87C2.72999 19.53 2.56001 19.18 2.42001 18.82C2.28001 18.45 2.17001 18.07 2.10001 17.69C2.03001 17.3 2 16.92 2 16.53V9.46995C2 9.03995 2.04 8.61995 2.12 8.19995C2.21 7.77995 2.34 7.36995 2.5 6.96995C2.67 6.57995 2.88 6.19995 3.12 5.84995C3.36 5.48995 3.64001 5.15995 3.95001 4.85995C4.26001 4.55995 4.59999 4.28995 4.95999 4.04995C5.32999 3.80995 5.70999 3.60995 6.10999 3.44995C6.51999 3.27995 6.94 3.15995 7.37 3.07995C7.79999 2.98995 8.23001 2.94995 8.67001 2.94995H13.3C13.46 2.94995 13.61 2.97995 13.76 3.03995C13.9 3.09995 14.03 3.17995 14.14 3.28995C14.25 3.39995 14.33 3.51995 14.39 3.65995C14.45 3.79995 14.48 3.94995 14.48 4.09995C14.48 4.25995 14.45 4.39995 14.39 4.54995C14.33 4.68995 14.25 4.80995 14.14 4.91995C14.03 5.02995 13.9 5.10995 13.76 5.16995C13.61 5.22995 13.46 5.25995 13.3 5.25995H8.67001C8.38001 5.25995 8.09999 5.27995 7.82999 5.33995C7.54999 5.38995 7.27999 5.46995 7.01999 5.57995C6.75999 5.67995 6.50999 5.80995 6.26999 5.96995C6.03999 6.11995 5.82 6.29995 5.62 6.48995C5.42 6.68995 5.23999 6.89995 5.07999 7.12995C4.92999 7.35995 4.78999 7.59995 4.67999 7.85995C4.57999 8.10995 4.49 8.37995 4.44 8.64995C4.38 8.91995 4.35999 9.18995 4.35999 9.46995V16.53C4.35999 16.81 4.38 17.08 4.44 17.36C4.5 17.63 4.58 17.9 4.69 18.16C4.8 18.42 4.93 18.67 5.09 18.9C5.25 19.13 5.43001 19.3499 5.64001 19.5499C5.84001 19.75 6.05999 19.92 6.29999 20.08C6.53999 20.24 6.79 20.37 7.06 20.47C7.32 20.58 7.6 20.66 7.88 20.72C8.16001 20.77 8.44001 20.7999 8.73001 20.7999C8.91001 20.7999 9.08 20.83 9.25 20.9C9.41 20.97 9.55999 21.0599 9.67999 21.18C9.80999 21.3099 9.91001 21.45 9.98001 21.61C10.05 21.77 10.08 21.94 10.09 22.11L10.1 23.74L13.08 21.61C13.84 21.07 14.69 20.7999 15.63 20.7999H19.32C19.61 20.7999 19.89 20.77 20.16 20.72C20.44 20.67 20.71 20.59 20.97 20.4799C21.23 20.3699 21.48 20.24 21.72 20.09C21.95 19.94 22.17 19.76 22.37 19.57C22.57 19.3699 22.75 19.16 22.91 18.93C23.07 18.7 23.2 18.46 23.31 18.2C23.41 17.95 23.5 17.68 23.55 17.41C23.61 17.14 23.63 16.87 23.63 16.59V12.94C23.63 12.79 23.66 12.64 23.72 12.5C23.78 12.36 23.87 12.23 23.98 12.13C24.09 12.02 24.22 11.93 24.36 11.88C24.51 11.82 24.66 11.79 24.82 11.79C24.97 11.79 25.12 11.82 25.27 11.88C25.41 11.93 25.54 12.02 25.65 12.13C25.76 12.23 25.85 12.36 25.91 12.5C25.97 12.64 26 12.79 26 12.94V16.59C26 17.02 25.95 17.44 25.87 17.86C25.78 18.28 25.66 18.69 25.49 19.08C25.32 19.48 25.11 19.8499 24.87 20.2099C24.63 20.57 24.35 20.9 24.04 21.2C23.73 21.5 23.39 21.7699 23.03 22.0099C22.67 22.2499 22.28 22.45 21.88 22.61C21.47 22.77 21.06 22.9 20.63 22.9799C20.2 23.07 19.76 23.11 19.32 23.11H16.4C15.47 23.11 14.62 23.3799 13.86 23.9199L9.91 26.74C9.67 26.91 9.39999 27 9.10999 27Z" fill="currentColor"></path>
+                            <path d="M24.6805 5.14453H18.1874C17.5505 5.14453 17.0342 5.66086 17.0342 6.29778C17.0342 6.9347 17.5505 7.45102 18.1874 7.45102H24.6805C25.3175 7.45102 25.8338 6.9347 25.8338 6.29778C25.8338 5.66086 25.3175 5.14453 24.6805 5.14453Z" fill="currentColor"></path>
+                            <path d="M22.6137 3.1804C22.6137 2.52848 22.0852 2 21.4333 2C20.7814 2 20.2529 2.52848 20.2529 3.1804V9.4168C20.2529 10.0687 20.7814 10.5972 21.4333 10.5972C22.0852 10.5972 22.6137 10.0687 22.6137 9.4168V3.1804Z" fill="currentColor"></path>
+                        </svg>
+                    </button>
+                </div>
+    
+                <div class="session-history h-full overflow-y-auto">
+                    <!-- 在会话列表底部添加加载指示器 -->
+                    <div v-if="isSessionListLoading" class="loading-indicator text-center p-5">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <div v-else v-for="(group, groupDate) in groupedSessionList" :key="groupDate">
+                        <div class="date-divider">{{ groupDate }}</div>
+                        <div v-for="(session, index) in group" :key="session.id"
+                            :class="['history-item', session.id === currentSessionId ? 'active' : '']"
+                            @click="selectSession(session.id)">
+                            <i class="fas fa-comment"></i>
+                            <span :title="formatDateTime(session.create_time)">
+                                {{ session.md_sessionName }}
+                            </span>
+                            <input v-if="session.isEditing" class="title-edit-input"
+                                v-model="session.md_sessionName" @click.stop
+                                @keyup.enter="updateMdSessionName(getSessionIndex(session.id))"
+                                @blur="updateMdSessionName(getSessionIndex(session.id))" ref="titleInput" />
+                            
+                            <!-- 下拉菜单按钮 -->
+                            <div v-if="!session.isEditing" class="session-action-menu">
+                                <v-menu z-index="10" offset-y content-class="history-item-menu" v-model="session.showMenu">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn icon x-small class="history-item-actions-btn" v-bind="attrs" v-on="on" @click.stop>
+                                            <v-icon size="14">fas fa-ellipsis-v</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <v-list class="pa-0 ma-0" dense>
+                                        <v-list-item @click.stop="editTitle(getSessionIndex(session.id))">
+                                            <v-list-item-icon class="!mr-2">
+                                                <v-icon size="16" class="pencil-icon">fas fa-pencil-alt</v-icon>
+                                            </v-list-item-icon>
+                                            <v-list-item-content>
+                                                <v-list-item-title class="rename-action">重命名</v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                        <v-list-item @click.stop="deleteSession(session.id)">
+                                            <v-list-item-icon class="!mr-2">
+                                                <v-icon color="red" size="16" class="trash-icon">fas fa-trash-alt</v-icon>
+                                            </v-list-item-icon>
+                                            <v-list-item-content>
+                                                <v-list-item-title class="delete-action">删除</v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="isLoadingMoreSessions" class="loading-more-indicator text-center py-2">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <div v-else-if="!hasMoreSessions && sessionList.length > pageSize" class="no-more-data text-center py-2 text-gray-500 text-sm">
+                        没有更多会话了
+                    </div>
+                </div>
+                
+    
+            </v-navigation-drawer>
+    
+            <!-- 主聊天区域 -->
+            <div class="main-content relative" 
+                 :class="{ 
+                    'sidebar-collapsed': sidebarCollapsed && !isMobile,
+                 }">
+                <div class="session-header">
+                    <div class="flex flex-1 items-center">
+                        <button v-if="isMobile" class="mobile-menu-btn" @click="toggleSidebar">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="brand-title">
+                            <div class="flex items-center" v-if="(sidebarCollapsed && !isMobile)">
+                                <button class="sidebar-logo-btn mr-2 sidebar-action-btn"
+                                    :title="sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'" @click="toggleSidebarCollapse">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                                        class="icon-xl-heavy max-md:hidden">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M8.85719 3L13.5 3C14.0523 3 14.5 3.44772 14.5 4C14.5 4.55229 14.0523 5 13.5 5H11.5V19H15.1C16.2366 19 17.0289 18.9992 17.6458 18.9488C18.2509 18.8994 18.5986 18.8072 18.862 18.673C19.4265 18.3854 19.8854 17.9265 20.173 17.362C20.3072 17.0986 20.3994 16.7509 20.4488 16.1458C20.4992 15.5289 20.5 14.7366 20.5 13.6V11.5C20.5 10.9477 20.9477 10.5 21.5 10.5C22.0523 10.5 22.5 10.9477 22.5 11.5V13.6428C22.5 14.7266 22.5 15.6008 22.4422 16.3086C22.3826 17.0375 22.2568 17.6777 21.955 18.27C21.4757 19.2108 20.7108 19.9757 19.77 20.455C19.1777 20.7568 18.5375 20.8826 17.8086 20.9422C17.1008 21 16.2266 21 15.1428 21H8.85717C7.77339 21 6.89925 21 6.19138 20.9422C5.46253 20.8826 4.82234 20.7568 4.23005 20.455C3.28924 19.9757 2.52433 19.2108 2.04497 18.27C1.74318 17.6777 1.61737 17.0375 1.55782 16.3086C1.49998 15.6007 1.49999 14.7266 1.5 13.6428V10.3572C1.49999 9.27341 1.49998 8.39926 1.55782 7.69138C1.61737 6.96253 1.74318 6.32234 2.04497 5.73005C2.52433 4.78924 3.28924 4.02433 4.23005 3.54497C4.82234 3.24318 5.46253 3.11737 6.19138 3.05782C6.89926 2.99998 7.77341 2.99999 8.85719 3ZM9.5 19V5H8.9C7.76339 5 6.97108 5.00078 6.35424 5.05118C5.74907 5.10062 5.40138 5.19279 5.13803 5.32698C4.57354 5.6146 4.1146 6.07354 3.82698 6.63803C3.69279 6.90138 3.60062 7.24907 3.55118 7.85424C3.50078 8.47108 3.5 9.26339 3.5 10.4V13.6C3.5 14.7366 3.50078 15.5289 3.55118 16.1458C3.60062 16.7509 3.69279 17.0986 3.82698 17.362C4.1146 17.9265 4.57354 18.3854 5.13803 18.673C5.40138 18.8072 5.74907 18.8994 6.35424 18.9488C6.97108 18.9992 7.76339 19 8.9 19H9.5ZM5 8.5C5 7.94772 5.44772 7.5 6 7.5H7C7.55229 7.5 8 7.94772 8 8.5C8 9.05229 7.55229 9.5 7 9.5H6C5.44772 9.5 5 9.05229 5 8.5ZM5 12C5 11.4477 5.44772 11 6 11H7C7.55229 11 8 11.4477 8 12C8 12.5523 7.55229 13 7 13H6C5.44772 13 5 12.5523 5 12Z"
+                                            fill="currentColor"></path>
+                                        <circle cx="20" cy="5" r="4" fill="#0285FF"></circle>
+                                    </svg>
+                                </button>
+                                <button class="flex items-center mr-2 sidebar-action-btn" @click="clearSessionId">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg" class="icon-xl-heavy">
+                                        <path
+                                            d="M15.6729 3.91287C16.8918 2.69392 18.8682 2.69392 20.0871 3.91287C21.3061 5.13182 21.3061 7.10813 20.0871 8.32708L14.1499 14.2643C13.3849 15.0293 12.3925 15.5255 11.3215 15.6785L9.14142 15.9899C8.82983 16.0344 8.51546 15.9297 8.29289 15.7071C8.07033 15.4845 7.96554 15.1701 8.01005 14.8586L8.32149 12.6785C8.47449 11.6075 8.97072 10.615 9.7357 9.85006L15.6729 3.91287ZM18.6729 5.32708C18.235 4.88918 17.525 4.88918 17.0871 5.32708L11.1499 11.2643C10.6909 11.7233 10.3932 12.3187 10.3014 12.9613L10.1785 13.8215L11.0386 13.6986C11.6812 13.6068 12.2767 13.3091 12.7357 12.8501L18.6729 6.91287C19.1108 6.47497 19.1108 5.76499 18.6729 5.32708ZM11 3.99929C11.0004 4.55157 10.5531 4.99963 10.0008 5.00007C9.00227 5.00084 8.29769 5.00827 7.74651 5.06064C7.20685 5.11191 6.88488 5.20117 6.63803 5.32695C6.07354 5.61457 5.6146 6.07351 5.32698 6.63799C5.19279 6.90135 5.10062 7.24904 5.05118 7.8542C5.00078 8.47105 5 9.26336 5 10.4V13.6C5 14.7366 5.00078 15.5289 5.05118 16.1457C5.10062 16.7509 5.19279 17.0986 5.32698 17.3619C5.6146 17.9264 6.07354 18.3854 6.63803 18.673C6.90138 18.8072 7.24907 18.8993 7.85424 18.9488C8.47108 18.9992 9.26339 19 10.4 19H13.6C14.7366 19 15.5289 18.9992 16.1458 18.9488C16.7509 18.8993 17.0986 18.8072 17.362 18.673C17.9265 18.3854 18.3854 17.9264 18.673 17.3619C18.7988 17.1151 18.8881 16.7931 18.9393 16.2535C18.9917 15.7023 18.9991 14.9977 18.9999 13.9992C19.0003 13.4469 19.4484 12.9995 20.0007 13C20.553 13.0004 21.0003 13.4485 20.9999 14.0007C20.9991 14.9789 20.9932 15.7808 20.9304 16.4426C20.8664 17.116 20.7385 17.7136 20.455 18.2699C19.9757 19.2107 19.2108 19.9756 18.27 20.455C17.6777 20.7568 17.0375 20.8826 16.3086 20.9421C15.6008 21 14.7266 21 13.6428 21H10.3572C9.27339 21 8.39925 21 7.69138 20.9421C6.96253 20.8826 6.32234 20.7568 5.73005 20.455C4.78924 19.9756 4.02433 19.2107 3.54497 18.2699C3.24318 17.6776 3.11737 17.0374 3.05782 16.3086C2.99998 15.6007 2.99999 14.7266 3 13.6428V10.3572C2.99999 9.27337 2.99998 8.39922 3.05782 7.69134C3.11737 6.96249 3.24318 6.3223 3.54497 5.73001C4.02433 4.7892 4.78924 4.0243 5.73005 3.54493C6.28633 3.26149 6.88399 3.13358 7.55735 3.06961C8.21919 3.00673 9.02103 3.00083 9.99922 3.00007C10.5515 2.99964 10.9996 3.447 11 3.99929Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                </button>
+    
+                            </div>
+                            <!-- 专家选择下拉菜单 -->
+                            <div class="agent-selector relative" v-if="currentChat.name">
+                                <v-menu z-index="10" v-model="showAgentDropdown" offset-y max-width="320">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <button class="agent-selector-btn flex items-center text-lg font-medium py-2 px-3 rounded-lg transition-colors" 
+                                               v-bind="attrs" v-on="on">
+                                            <span>{{ currentChat.name }}</span>
+                                            <i class="fas fa-chevron-down ml-2 text-sm transition-transform"
+                                               :class="{'rotate-180': showAgentDropdown}"></i>
+                                        </button>
+                                    </template>
+                                    <v-card>
+                                        <v-list>
+                                            <v-list-item 
+                                                v-for="expert in chatOptions" 
+                                                :key="expert.id"
+                                                @click="switchToExpert(expert)">
+                                                <v-list-item-avatar>
+                                                    <v-avatar color="primary lighten-2">
+                                                        <i class="fas fa-robot white--text"></i>
+                                                    </v-avatar>
+                                                </v-list-item-avatar>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>{{ expert.name }}</v-list-item-title>
+                                                    <v-list-item-subtitle>{{ expert.description || '专家助手' }}</v-list-item-subtitle>
+                                                </v-list-item-content>
+                                                <v-list-item-action v-if="currentChat.id === expert.id">
+                                                    <v-icon size="14" color="primary">fas fa-check</v-icon>
+                                                </v-list-item-action>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-card>
+                                </v-menu>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="session-action-group">
+                        <!-- 设置按钮 -->
+                        <v-menu z-index="999" offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn icon class="mx-2 settings-btn" v-bind="attrs" v-on="on" title="设置">
+                                    <v-icon>fas fa-cog</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-card min-width="200">
+                                <v-list class="pa-0 ma-0">
+                                    <v-subheader>主题设置</v-subheader>
+                                    <v-list-item @click="toggleTheme()">
+                                        <v-list-item-icon class="!mr-3">
+                                            <v-icon :color="theme === 'light' ? 'primary' : ''">fas fa-sun</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title>浅色模式</v-list-item-title>
+                                        </v-list-item-content>
+                                        <v-list-item-action v-if="theme === 'light'">
+                                            <v-icon size="14" color="primary">fas fa-check</v-icon>
+                                        </v-list-item-action>
+                                    </v-list-item>
+                                    <v-list-item @click="toggleTheme">
+                                        <v-list-item-icon class="!mr-3">
+                                            <v-icon :color="theme === 'dark' ? 'primary' : ''">fas fa-moon</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title>深色模式</v-list-item-title>
+                                        </v-list-item-content>
+                                        <v-list-item-action v-if="theme === 'dark'">
+                                            <v-icon size="14" color="primary">fas fa-check</v-icon>
+                                        </v-list-item-action>
+                                    </v-list-item>
+                                </v-list>
+                            </v-card>
+                        </v-menu>
+                       
+                        <!-- 用户头像按钮 -->
+                        <v-menu z-index="999" offset-y :close-on-content-click="false">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn icon class="mx-2 user-avatar-btn" v-bind="attrs" v-on="on" :title="isLogin ? userId : '未登录'">
+                                    <v-avatar size="28">
+                                        <img
+                                        :src="`/<$ ctx.app.config.appId $>/public/image/avatar.svg`"
+                                        alt="John"
+                                      >
+                                    </v-avatar>
+                                </v-btn>
+                            </template>
+                            <v-card>
+                                <v-list dense>
+                                    <v-list-item v-if="isLogin">
+                                        <v-list-item-content>
+                                            <v-list-item-title>{{ userId }}</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                    <v-list-item v-if="!isLogin" @click="showLoginDialog = true;if(isMobile){sidebarCollapsed = false; sidebarVisible=false}">
+                                        <v-list-item-icon>
+                                            <v-icon>fas fa-sign-in-alt</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-title>登录</v-list-item-title>
+                                    </v-list-item>
+                                    <v-list-item v-if="isLogin" @click="handleLogout">
+                                        <v-list-item-icon class="!mr-2">
+                                            <v-icon>fas fa-sign-out-alt</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-title>退出登录</v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-card>
+                        </v-menu>
+
+                         <!-- 添加右侧边栏按钮 -->
+                         <v-btn v-if="!sourceSidebarVisible || isMobile" icon class="mx-2 source-sidebar-btn" @click="toggleSourceSidebar" title="知识库来源">
+                            <v-icon>fas fa-book</v-icon>
+                        </v-btn>
+                    </div>
+                </div>
+    
+                <div class="session-messages relative px-[10px] md:px-5" ref="messagesContainer">
+    
+                    <div class="mx-auto relative  max-w-5xl w-full h-full">
+                        <div v-if="isSessionDetailLoading" class="text-center p-0 md:p-12">
+                            <i class="fas fa-spinner fa-spin text-3xl"></i>
+                        </div>
+    
+                        <div v-else-if="currentSession.messages.length === 0 && !isSessionDetailLoading && !isSessionListLoading"
+                            class="text-center p-0 md:p-12">
+                            <div class="flex flex-col items-center justify-center min-h-[60vh]">
+                                <div class="text-2xl font-bold text-center mb-8">有什么可以帮忙的?</div>
+    
+                                <div 
+                                    :class="`w-[90%] md:w-full max-w-md  md:max-w-lg lg:max-w-xl xl:max-w-2xl 2xl:max-w-5xl mx-auto`">
+                                    <chat-input v-model="newMessage" :model.sync="currentModel" :systemPrompt.sync="systemPrompt" :currentChat="currentChat" :is-loading="isLoading"
+                                        @send="sendMessage" @selectModel="currentModel=$event" ref="chatInput">
+                                    </chat-input>
+                                </div>
+
+                                <!-- 热门话题按钮区域 -->
+                                <div class="hot-topics-container w-[90%] md:w-full max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl 2xl:max-w-5xl mx-auto mt-8 rounded-lg p-4">
+                                    <div v-if="currentChat.hotTopics && currentChat.hotTopics.length > 0" class="masonry-container">
+                                        <v-btn 
+                                            v-for="(topic, index) in currentChat.hotTopics.slice(0, 6)" 
+                                            :key="index"
+                                            outlined
+                                            class="text-center py-3 px-4 rounded-lg border border-solid border-gray-200 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800 transition-all duration-300 animate-fadeIn"
+                                            :style="{'animation-delay': `${index * 0.1}s`}"
+                                            @click="newMessage = topic; sendMessage()">
+                                            <span class="topic-icon block">
+                                                <i class="fas" :class="[
+                                                    index % 4 === 0 ? 'fa-search text-blue-500' : 
+                                                    index % 4 === 1 ? 'fa-comment-alt text-teal-500' : 
+                                                    index % 4 === 2 ? 'fa-heart text-pink-500' : 
+                                                    'fa-rocket text-purple-500'
+                                                ]"></i>
+                                            </span>
+                                            <span class="ml-2 topic-text block text-center whitespace-nowrap">{{ topic }}</span>
+                                        </v-btn>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div v-else v-for="(message, index) in currentSession.messages" :key="index"
+                            :class="['message', message.role === 'user' ? 'user-message' : 'assistant-message']">
+                            <div :class="['message-avatar', message.role === 'user' ? 'user-avatar-icon' : '']">
+                                <i :class="message.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
+                            </div>
+                            <div class="message-content">
+                                <div v-if="message.role !== 'user' && !message.isRefreshMarkdown">
+                                    <div v-if="message.errorContent">{{ message.errorContent }}</div>
+                                    <div v-if="!message.errorContent" v-html="renderMarkdown(message.content)"
+                                        @click="handleReferenceHover($event, message)"></div>
+                                </div>
+                                <div v-if="message.role === 'user'">{{ message.content }}</div>
+    
+                                <div class="flex justify-between items-center w-full" v-if="!message.isLoading">
+                                    <div class="message-actions mt-1 flex items-center flex-1" v-if="message.role === 'assistant'">
+                                        <button class="action-btn" title="复制" @click="copyMessage(message.content)">
+                                            <i class="far fa-copy"></i>
+                                        </button>
+                                       
+                                    </div>
+                                    <div class="message-actions mt-1" v-if="message.role === 'user'">
+                                        <button class="action-btn" title="复制" @click="copyMessage(message.content)">
+                                            <i class="far fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 猜你想问 -->
+                        <div v-if="!isSessionDetailLoading && currentSession.messages.length>1 && !isLoading">
+                            <div v-if="userQuestion.length" class="inline-flex flex-col">
+                                <div v-for="item in userQuestion">
+                                    <v-btn 
+                                    @click="newMessage = item; sendMessage()"
+                                class="text-center mb-3 inline-flex border border-solid border-gray-200 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800 transition-all duration-300 animate-fadeIn"
+                                 outlined>{{item}}</v-btn>
+                                </div>
+                             </div>
+                             <div v-else-if="isUserQuestionLoading" class="inline-flex flex-col">
+                                <v-skeleton-loader
+                                    v-for="i in 3"
+                                    :key="i"
+                                    type="button"
+                                    class="mb-3"
+                                    :height="36"
+                                    :width="Math.floor(Math.random() * 150) + 100"
+                                ></v-skeleton-loader>
+                             </div>
+                        </div>
+    
+                        <button v-if="showScrollToBottomButton && !isSessionDetailLoading" class="scroll-to-bottom-btn" @click="scrollToBottom">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <p v-else class="h-[20px]"></p>
+                    </div>
+    
+                </div>
+    
+    
+                <div v-if="currentSession.messages.length !== 0"
+                    :class="`sticky bottom-5 left-0 right-0 px-[10px] md:px-5`">
+                    <div class="mx-auto max-w-5xl">
+                        <chat-input v-model="newMessage" :model.sync="currentModel" :systemPrompt.sync="systemPrompt" :currentChat="currentChat" :is-loading="isLoading"
+                        @send="sendMessage" @selectModel="selectModel($event)" ref="chatInput">
+                    </chat-input>
+                    </div>
+                </div>
+            </div>
+            
+       
+         
+            <!-- 引用内容浮层卡片 -->
+            <div v-if="showReferenceTooltip" class="reference-tooltip reference-modal bg-white" :style="referenceTooltipStyle">
+                <div class="reference-tooltip-header flex">
+                    <h3 class="flex-1">
+                        引用内容
+                    </h3>
+                    <v-btn x-small @click="sourceSidebarVisible=true;$refs.sourceSidebar.previewDocument(currentChunk.document_id, currentReferenceContent)">
+                        <i class="fas fa-external-link-alt"></i>
+                        查看原文
+                    </v-btn>
+                </div>
+                <div class="reference-tooltip-content reference-modal-content">
+                    <div v-if="isReferenceLoading" class="reference-loading">
+                        <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    </div>
+                    <div v-else v-html="currentReferenceContent"></div>
+                </div>
+            </div>
+
+            <!-- 登录弹窗 -->
+            <login-dialog :show="showLoginDialog" @close="showLoginDialog = false" @login-success="handleLoginSuccess"></login-dialog>
+        </v-app>
+     
+        <jh-toast />
+    </div>
+</script>
+
+<div id="app">
+</div>
+{% endblock %}
+
+
+{% block vueScript %}
+{% include 'component/ChatInput.html' %}
+{% include 'component/message/MessageList.html' %}
+{% include 'component/message/MessageItem.html' %}
+{% include 'component/user/LoginDialog.html' %}
+
+<script type="module">
+
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify({
+            theme: vuetifyThemeConfig
+        }),
+        template: '#app-template',
+        data() {
+            return {
+                deviceName: '',
+                newMessage: '',
+                currentSessionId: null,
+                theme: 'light', // 默认亮色主题
+                isLoading: false,
+                controller: null, // 用于控制 fetchEventSource 请求
+                currentModel: null, // 当前模型
+                currentMessage: '', // 当前消息内容
+                showLoginDialog: false, // 控制登录弹窗显示
+
+                sessionList: [],
+                noteList: [], // 笔记列表
+                isNoteListLoading: false, // 笔记列表加载状态
+                totalNotes: 0, // 笔记总数
+                showNoteDialog: false, // 控制笔记对话框显示
+                currentNote: {}, // 当前编辑的笔记
+                showCreateNoteDialog: false, // 创建笔记对话框显示状态
+                createNoteData: {}, // 创建笔记的数据
+
+                currentReferenceContent: '', // 当前引用内容
+                currentChunk: {},
+                sidebarVisible: window.innerWidth >= 769 ? true : false, // 控制侧边栏在移动设备上的显示
+                chatOptions: JSON.parse(String.raw`<$ ctx.app.config.ragflow.chatOptions | dump| safe $>`), // 专家选项
+
+                currentChat: { models: [] }, // 当前聊天专家
+
+                isSessionListLoading: true, // 会话列表加载状态
+                isSessionDetailLoading: false, // 会话详情加载状态
+                showScrollToBottomButton: false, // 滚动到底部按钮显示状态
+                sidebarCollapsed: false, // 侧边栏折叠状态
+
+                // 引用浮层相关数据
+                showReferenceTooltip: false,
+                referenceTooltipStyle: {
+                    top: '0px',
+                    left: '0px'
+                },
+                isReferenceLoading: false,
+
+                knowledgeBaseList: [], // 知识库列表
+                isKnowledgeBaseListLoading: true, // 知识库列表加载状态
+
+                showAgentDropdown: false, // 专家下拉菜单显示状态
+                sourceSidebarVisible: window.innerWidth >= 769 ? true : false, // 知识库来源选择侧边栏显示状态
+                selectedKnowledgeBases: [], // 选中的知识库列表
+
+                systemPrompt: '土明', // 系统提示词
+
+                // 猜你想问
+                userQuestion: [],
+                isUserQuestionLoading: false, // 猜你想问加载状态
+
+                // 分页加载相关
+                sessionPage: 1, // 会话列表当前页码
+                notePage: 1, // 笔记列表当前页码
+                pageSize: 15, // 每页显示条数
+                hasMoreSessions: true, // 是否还有更多会话
+                hasMoreNotes: true, // 是否还有更多笔记
+                isLoadingMoreSessions: false, // 加载更多会话状态
+                isLoadingMoreNotes: false, // 加载更多笔记状态
+
+                userInfo: {}, // 用户信息
+            };
+        },
+        async created() {
+            // 初始化主题
+            this.loadTheme();
+
+            // 设置视口高度变量
+            this.setViewportHeight();
+
+
+
+            await this.getUserInfo();
+
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 从URL获取参数
+            const agentIdFromUrl = urlParams.get('agentId');
+            const modelFromUrl = urlParams.get('model');
+            const sessionIdFromUrl = urlParams.get('sessionId');
+
+            // 获取本地存储的专家信息
+            let currentChatStr = localStorage.getItem('xiaoxun_currentChat');
+            const modelFromStorage = 'Gemini2-Flash';
+
+            let currentChat = null;
+
+            // 尝试解析本地存储的专家信息
+            if (currentChatStr) {
+                try {
+                    currentChat = JSON.parse(currentChatStr);
+                } catch (e) {
+                    console.error('解析本地存储的专家信息失败:', e);
+                }
+            }
+
+
+            // 直接使用第一个专家
+            currentChat = this.chatOptions[0];
+
+
+            // 从URL获取sessionId参数
+            if (sessionIdFromUrl) {
+                this.currentSessionId = sessionIdFromUrl;
+            }
+            // 并行加载数据
+            await Promise.all([
+                this.selectExpert(currentChat, false, modelFromUrl || modelFromStorage),
+            ]);
+            this.selectModel(modelFromUrl || modelFromStorage);
+
+        },
+        computed: {
+            userId() {
+                return window.userInfo?.userId || this.userInfo.userId;
+            },
+            isLogin() {
+                return !!window.userInfo.userId;
+            },
+            currentSession() {
+                if (this.sessionList.length === 0) {
+                    return { messages: [] };
+                }
+                const session = this.sessionList.find(session => session.id === this.currentSessionId);
+                return session || { messages: [] };
+            },
+            currentAgentId() {
+                return this.currentChat.id;
+            },
+            isMobile() {
+                return window.innerWidth < 768;
+            },
+            groupedSessionList() {
+                const groups = {};
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                const lastWeek = new Date(today);
+                lastWeek.setDate(lastWeek.getDate() - 7);
+
+                const lastMonth = new Date(today);
+                lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+                this.sessionList.forEach(session => {
+                    let dateObj;
+                    if (typeof session.create_time === 'string') {
+                        dateObj = new Date(session.create_time);
+                    } else {
+                        dateObj = new Date(session.create_time || session.create_time);
+                    }
+
+                    let groupName;
+                    const sessionDate = new Date(dateObj);
+                    sessionDate.setHours(0, 0, 0, 0);
+
+                    if (sessionDate.getTime() === today.getTime()) {
+                        groupName = '今天';
+                    } else if (sessionDate.getTime() === yesterday.getTime()) {
+                        groupName = '昨天';
+                    } else if (sessionDate >= lastWeek) {
+                        groupName = '最近7天';
+                    } else if (sessionDate >= lastMonth) {
+                        groupName = '最近30天';
+                    } else {
+                        // 按月份分组
+                        groupName = `${sessionDate.getFullYear()}年${sessionDate.getMonth() + 1}月`;
+                    }
+
+                    if (!groups[groupName]) {
+                        groups[groupName] = [];
+                    }
+                    groups[groupName].unshift(session);
+                });
+
+                // 对每个组内的会话按时间倒序排序
+                Object.keys(groups).forEach(key => {
+                    groups[key].sort((a, b) => {
+                        const dateA = new Date(a.create_time || a.create_time);
+                        const dateB = new Date(b.create_time || b.create_time);
+                        return dateB - dateA;
+                    });
+                });
+
+                return groups;
+            },
+        },
+        methods: {
+            async getUserInfo() {
+                const userInfo = (await window.jianghuAxios({
+                    data: {
+                        appData: {
+                            pageId: 'allPage',
+                            actionId: 'getUserInfo',
+                        }
+                    }
+                })).data.appData.resultData;
+                this.userInfo = userInfo;
+            },
+            // 选择专家
+            async selectExpert(expert, createSession = true, preferredModelId = null) {
+                if (!expert) return;
+
+                document.title = expert.name; // 更新页面标题
+
+                // 更新品牌标题
+                const brandTitle = document.querySelector('.brand-title span');
+                if (brandTitle) {
+                    brandTitle.textContent = expert.name;
+                }
+
+                // 根据专家类型调整热点问题
+                this.hotTopics = expert.hotTopics || [];
+
+                this.showExpertSelection = false;
+                this.currentChat = expert;
+
+                // 保存专家选择到本地
+                localStorage.setItem('xiaoxun_currentChat', JSON.stringify(expert));
+
+                // 选择模型
+                if (expert.models && expert.models.length > 0) {
+                    let modelToSelect = null;
+                    // 优先使用传入的首选模型ID
+                    if (preferredModelId) {
+                        modelToSelect = expert.models.includes(preferredModelId) ? preferredModelId : expert.models[0];
+                    }
+                    // 如果没有找到匹配的模型，使用专家的第一个模型
+                    if (!modelToSelect) {
+                        modelToSelect = expert.models[0];
+                    }
+
+                    this.selectModel(modelToSelect);
+                }
+
+                // 清空当前会话列表并获取新的会话列表
+                this.sessionList = [];
+
+                await this.getSessionList();
+
+                if (this.currentSessionId) {
+                    this.selectSession(this.currentSessionId);
+                }
+            },
+
+            async createNewSession() {
+                try {
+                    const { id } = (await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/createSession`, {
+                        agentId: this.currentAgentId,
+                        userId: this.userId
+                    })).data;
+                    const sessionId = id;
+                    const newSession = {
+                        id: sessionId,
+                        messages: [],
+                        create_time: +new Date()
+                    };
+                    // 使用unshift将新会话添加到列表最前面，而不是push添加到末尾
+                    this.sessionList.unshift(newSession);
+
+                    this.currentSessionId = sessionId;
+                    this.updateUrlParams();
+                } catch (error) {
+                    console.error('创建新会话失败:', error);
+                    this.error = '创建新会话失败，请重试';
+                } finally {
+                    this.isSessionListLoading = false;
+                }
+            },
+
+            async deleteSession(id) {
+                try {
+                    await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/deleteSession`, { sessionId: id, agentId: this.currentAgentId });
+
+                    // 从sessionList中删除指定ID的会话
+                    this.sessionList = this.sessionList.filter(session => session.id !== id);
+                    // 如果当前会话ID是被删除的会话，则清除当前会话ID
+                    if (this.currentSessionId === id) {
+                        this.currentSessionId = null;
+                    }
+                    this.updateUrlParams();
+
+                } catch (error) {
+                    console.error('删除会话失败:', error);
+                    this.error = '删除会话失败，请重试';
+                }
+            },
+
+            async updateMdSessionName(index) {
+                Vue.set(this.sessionList[index], 'isEditing', false);
+
+                await new Promise(resolve => setTimeout(resolve, 10));
+                const session = this.sessionList[index];
+
+                await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/updateSession`, { sessionId: session.id, agentId: this.currentAgentId, md_sessionName: session.md_sessionName });
+
+            },
+
+            selectSession(id) {
+                // 
+                this.currentSessionId = id;
+                this.updateUrlParams();
+                const session = this.sessionList.find(s => s.id === id);
+
+                // 如果会话还没有加载详情，先加载详情
+                if (!session.messages || session.messages.length === 0) {
+                    this.getSessionDetail(id);
+                }
+
+                // 移动端选择会话后关闭侧边栏
+                if (this.isMobile) {
+                    this.sidebarVisible = false;
+                }
+
+                // 确保选择会话后重新加载引用内容并滚动到底部
+                this.$nextTick(() => {
+                    // 强制所有消息重新渲染
+                    if (session.messages) {
+                        session.messages.forEach(message => {
+                            if (message.role === 'assistant') {
+                                // 临时标记，然后移除，强制重新渲染
+                                message.isRefreshMarkdown = true;
+                                this.$nextTick(() => {
+                                    message.isRefreshMarkdown = false;
+                                });
+                            }
+                        });
+                    }
+
+                    // 立即滚动一次，并稍后再次滚动确保内容完全加载
+                    this.scrollToBottom();
+                    setTimeout(() => {
+                        this.scrollToBottom();
+                    }, 200);
+                });
+            },
+
+            async getSessionList(loadMore = false) {
+                if (loadMore) {
+                    this.isLoadingMoreSessions = true;
+                } else {
+                    this.isSessionListLoading = true;
+                    this.sessionPage = 1; // 重置页码
+                    this.hasMoreSessions = true;
+                }
+
+                try {
+                    const response = await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/getSessionList`, {
+                        userId: this.userId,
+                        agentId: this.currentAgentId,
+                        limit: this.pageSize,
+                        offset: (this.sessionPage - 1) * this.pageSize,
+                        orderBy: [{ column: 'create_time', order: 'desc' }]
+                    });
+
+                    const { deviceName, rows: sessionList, count: total } = response.data;
+
+                    this.deviceName = deviceName;
+
+                    const formattedSessions = sessionList.map(session => ({
+                        ...session,
+                        isEditing: false,
+                        showMenu: false,
+                        messages: []
+                    }));
+
+                    if (loadMore) {
+                        // 追加到现有列表
+                        this.sessionList = [...this.sessionList, ...formattedSessions];
+                    } else {
+                        // 替换现有列表
+                        this.sessionList = formattedSessions;
+                    }
+
+                    // 判断是否还有更多数据
+                    this.hasMoreSessions = this.sessionList.length < total;
+
+                    // 检查当前会话是否存在
+                    if (this.currentSessionId) {
+                        const sessionExists = this.sessionList.some(s => s.id === this.currentSessionId);
+                        if (!sessionExists && !loadMore) {
+                            this.clearSessionId();
+                        }
+                    } else {
+                        this.isSessionDetailLoading = false
+                    }
+                } catch (error) {
+                    console.error('获取会话列表失败:', error);
+                } finally {
+                    if (loadMore) {
+                        this.isLoadingMoreSessions = false;
+                    } else {
+                        this.isSessionListLoading = false;
+                    }
+                }
+            },
+
+            // 加载更多会话
+            loadMoreSessions() {
+                if (this.isLoadingMoreSessions || !this.hasMoreSessions) return;
+                this.sessionPage++;
+                this.getSessionList(true);
+            },
+
+
+            // 初始化滚动事件监听
+            initScrollListeners() {
+                // 会话历史滚动监听
+                const sessionHistoryEl = document.querySelector('.session-history');
+                if (sessionHistoryEl) {
+                    sessionHistoryEl.addEventListener('scroll', this.handleSessionHistoryScroll);
+                }
+
+                // 笔记列表滚动监听
+                const notesListEl = document.querySelector('.notes-list');
+                if (notesListEl) {
+                    notesListEl.addEventListener('scroll', this.handleNotesListScroll);
+                }
+            },
+
+            // 处理会话历史滚动
+            handleSessionHistoryScroll(event) {
+                const { scrollTop, scrollHeight, clientHeight } = event.target;
+                // 当滚动到距离底部50px时加载更多
+                if (scrollHeight - scrollTop - clientHeight < 50 && !this.isLoadingMoreSessions && this.hasMoreSessions) {
+                    this.loadMoreSessions();
+                }
+            },
+
+            // 处理笔记列表滚动
+            handleNotesListScroll(event) {
+                const { scrollTop, scrollHeight, clientHeight } = event.target;
+                // 当滚动到距离底部50px时加载更多
+                if (scrollHeight - scrollTop - clientHeight < 50 && !this.isLoadingMoreNotes && this.hasMoreNotes) {
+                    this.loadMoreNotes();
+                }
+            },
+
+            async getSessionDetail(sessionId) {
+                this.isSessionDetailLoading = true;
+                this.userQuestion = [];
+                try {
+                    const response = await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/getSessionDetail`, {
+                        userId: this.userId,
+                        agentId: this.currentAgentId,
+                        id: sessionId
+                    });
+                    const sessionDetail = response.data || {}
+                    sessionDetail.messages = JSON.parse(sessionDetail.message || '[]')
+                    sessionDetail.reference = JSON.parse(sessionDetail.reference || '[]')
+                    sessionDetail.reference = sessionDetail.reference.filter(item => item.chunks.length > 0)
+
+                    let referenceIndex = 0;
+                    sessionDetail.messages = sessionDetail.messages.map(message => {
+                        if (message.role == 'assistant' && message.content.includes('$$')) {
+                            message.reference = sessionDetail.reference[referenceIndex];
+                            referenceIndex++;
+                        }
+                        return message;
+                    });
+
+                    // 更新当前会话的详细信息
+                    const sessionIndex = this.sessionList.findIndex(s => s.id === sessionId);
+                    if (sessionIndex !== -1) {
+                        this.$set(this.sessionList, sessionIndex, {
+                            ...this.sessionList[sessionIndex],
+                            messages: sessionDetail.messages.map(message => this.processAssistantMessage(message))
+                        });
+                    }
+
+
+                } catch (error) {
+                    console.error('获取会话详情失败:', error);
+                }
+                this.isSessionDetailLoading = false;
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+            },
+
+            async sendMessage() {
+                const message = this.newMessage.trim();
+                if (!message || this.isLoading) return;
+
+                // 没有选中会话时创建新会话
+                if (!this.currentSessionId || !this.isSessionExists(this.currentSessionId)) {
+                    await this.createNewSession();
+                }
+
+                // 提取消息中的引用标记
+                const referenceIds = this.selectedKnowledgeBases.map(item => item.id).join(',');
+
+                // 添加用户消息
+                this.currentSession.messages.push({
+                    role: 'user',
+                    content: message,
+                    timestamp: new Date()
+                });
+
+                // 更新聊天标题
+                this.updateSessionTitle(message);
+
+                this.newMessage = '';
+
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+
+                // 取消之前的请求
+                if (this.controller) {
+                    this.controller.abort();
+                }
+
+                this.controller = new AbortController();
+                this.isLoading = true;
+
+                // 添加占位消息
+                const messageIndex = this.currentSession.messages.push({
+                    role: 'assistant',
+                    content: '...🕞',
+                    timestamp: new Date()
+                }) - 1;
+
+                // 发送消息请求
+                this.sendMessageRequest(message, messageIndex, referenceIds);
+            },
+
+            updateSessionTitle(message) {
+                // 如果是第一条消息，更新聊天标题
+                if (this.currentSession.messages.length <= 2) {
+                    this.currentSession.md_sessionName = this.truncateText(message, 20);
+                }
+            },
+
+            truncateText(text, length) {
+                return text.length > length ? text.substring(0, length) + '...' : text;
+            },
+
+            sendMessageRequest(message, messageIndex, referenceIds = null) {
+                this.isLoading = true;
+                this.currentSession.messages[messageIndex].isLoading = true;
+                this.currentMessage = message;
+
+                const systemPrompts = this.currentChat?.systemPrompts;
+                let systemPrompt;
+                if (systemPrompts) {
+                    systemPrompt = systemPrompts.find(prompt => prompt.id === this.systemPrompt)?.promptFileName || '';
+                }
+
+                window.fetchEventSource(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/message`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        message: message,
+                        sessionId: this.currentSession.id,
+                        agentId: this.currentAgentId,
+                        userId: this.userId,
+                        beginParams: {
+                            model: this.currentModel,
+                            document_ids: referenceIds,
+                            systemPrompt,
+                        },
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: this.controller.signal,
+                    onmessage: (event) => this.handleMessageResponse(event, messageIndex),
+                    onerror: (error) => this.handleMessageError(error, messageIndex),
+                    onclose: () => this.handleMessageClose(messageIndex)
+                });
+            },
+
+            handleMessageResponse(event, messageIndex) {
+                if (!event || !event.data) return;
+
+                this.isLoading = true;
+                try {
+                    event.data = event.data.replace(/NaN/g, '""');
+                    const messageData = JSON.parse(event.data);
+                    const { answer, reference, id } = messageData.data;
+
+                    if (answer) {
+                        this.currentSession.messages[messageIndex].id = id;
+                        this.currentSession.messages[messageIndex].isRefreshMarkdown = true;
+                        this.currentSession.messages[messageIndex].chunks = reference?.chunks || [];
+                        this.currentSession.messages[messageIndex].docs = reference?.doc_aggs || [];
+                        this.currentSession.messages[messageIndex].reference = reference || {};
+                        this.currentSession.messages[messageIndex].content = answer;
+                        this.currentSession.messages[messageIndex].isRefreshMarkdown = false;
+
+                        // 滚动到底部
+                        this.scrollToBottom();
+                    }
+                } catch (e) {
+                    console.error('解析消息失败:', e);
+                }
+            },
+
+            handleMessageError(error, messageIndex) {
+                console.error('SSE 错误:', error);
+                this.currentSession.messages[messageIndex].errorContent = '连接错误，请重试。';
+                this.currentSession.messages[messageIndex].isLoading = false;
+                this.isLoading = false;
+                this.controller = null;
+            },
+
+            async handleMessageClose(messageIndex) {
+                this.isLoading = false;
+                this.currentSession.messages[messageIndex].isLoading = false;
+                const { content } = this.currentSession.messages[messageIndex];
+                if (content && content.endsWith('🕞')) {
+                    this.currentSession.messages[messageIndex].errorContent = '请求已结束';
+                }
+                const { errorContent, reference } = this.currentSession.messages[messageIndex];
+
+                this.controller = null;
+
+                if (!content || errorContent || !reference.chunks) return;
+
+                const chunks = reference.chunks.slice(0, 6).map(chunk => chunk.content.substring(0, 500)).join('\n');
+                const message = `
+                用户问题：
+                """
+                ${this.currentMessage}
+                """
+                机器人回复：
+                """
+                ${chunks}
+                """
+                `;
+
+                this.getUserQuestion(message);
+            },
+
+            scrollToBottom() {
+                const container = this.$refs.messagesContainer;
+                if (!container) return;
+
+                // 立即执行滚动
+                container.scrollTop = container.scrollHeight;
+
+                // 延迟执行，确保DOM更新后滚动生效
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 10);
+            },
+
+            // 处理滚动事件
+            handleScroll() {
+                const container = this.$refs.messagesContainer;
+                if (!container) return;
+
+                // 如果消息内容足够长，根据滚动位置决定是否显示回到底部按钮
+                if (container.scrollHeight >= container.clientHeight) {
+                    setTimeout(() => {
+                        this.showScrollToBottomButton =
+                            (container.scrollHeight - container.scrollTop - container.clientHeight) > 200;
+                    }, 100);
+                }
+            },
+
+            toggleTheme() {
+                this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                this.$vuetify.theme.dark = this.theme === 'dark';
+
+                // 保存主题设置到本地存储
+                localStorage.setItem('sessionTheme', this.theme);
+
+                // 更新HTML属性
+                document.documentElement.setAttribute('data-theme', this.theme);
+
+                // 添加或移除Tailwind需要的dark类
+                if (this.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+
+            // 从本地存储加载主题设置
+            loadTheme() {
+                const savedTheme = localStorage.getItem('sessionTheme');
+                this.theme = savedTheme ? savedTheme : 'light';
+                this.$vuetify.theme.dark = this.theme === 'dark';
+                document.documentElement.setAttribute('data-theme', this.theme);
+
+                if (this.theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            },
+
+            // 选择模型
+            selectModel(model) {
+                if (!model) return;
+                if (!window.fetchEventSource) return;
+
+                const modelId = typeof model === 'object' ? model.id : model;
+                this.currentModel = modelId;
+
+                // 更新网页URL
+                this.updateUrlParams();
+
+                // 保存用户模型选择
+                // Tip: 不用本地存储，因为url上有
+                // localStorage.setItem('xiaoxun_currentModel', this.currentModel);
+            },
+
+            // 格式化时间
+            formatTime(date) {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                return `${hours}:${minutes}`;
+            },
+
+            // 复制消息
+            copyMessage(text) {
+                navigator.clipboard.writeText(text)
+                window.vtoast.success('复制成功')
+            },
+
+            // 编辑聊天标题
+            editTitle(index) {
+                // 先关闭其他正在编辑的标题
+                this.sessionList.forEach((session, i) => {
+                    if (i !== index && session.isEditing) {
+                        Vue.set(session, 'isEditing', false);
+                    }
+                });
+
+                // 设置当前标题为编辑状态
+                Vue.set(this.sessionList[index], 'isEditing', true);
+
+                // 下一个渲染周期后聚焦输入框
+                this.$nextTick(() => {
+                    if (this.$refs.titleInput && this.$refs.titleInput[0]) {
+                        this.$refs.titleInput[0].focus();
+                    }
+                });
+            },
+            // 渲染 Markdown 内容
+            renderMarkdown(content) {
+                if (!content) return '';
+
+                // 获取当前消息对象
+                const currentMessage = this.getCurrentMessageByContent(content);
+
+                // 使用共享工具函数处理渲染
+                return window.markdownUtils.renderMarkdown(content, currentMessage);
+            },
+
+            // 根据文本内容查找当前消息
+            getCurrentMessageByContent(text) {
+                if (!text) return null;
+
+                // 精确匹配
+                for (const message of this.currentSession.messages) {
+                    if (message.content === text) {
+                        return message;
+                    }
+                }
+
+                // 内容前缀匹配
+                const textPrefix = text.substring(0, Math.min(50, text.length));
+                for (const message of this.currentSession.messages) {
+                    if (message.role === 'assistant' && message.content && message.content.includes(textPrefix)) {
+                        return message;
+                    }
+                }
+
+                // 返回最后一条助手消息
+                for (let i = this.currentSession.messages.length - 1; i >= 0; i--) {
+                    if (this.currentSession.messages[i].role === 'assistant') {
+                        return this.currentSession.messages[i];
+                    }
+                }
+
+                return null;
+            },
+
+            // HTML 转义函数，用于防止 XSS 攻击
+            escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            },
+
+            handleReferenceHover(event, message) {
+                // 使用共享工具函数处理引用点击
+                const result = window.markdownUtils.handleReferenceHover(event, message, {
+                    isMobile: this.isMobile
+                });
+
+                // 更新组件状态
+                this.showReferenceTooltip = result.showTooltip;
+                this.referenceTooltipStyle = result.tooltipStyle;
+                this.isReferenceLoading = result.isLoading;
+                this.currentReferenceContent = result.referenceContent;
+                this.currentChunk = result.chunk;
+            },
+
+            closeReferenceModal() {
+                this.showReferenceModal = false;
+            },
+
+            // 关闭引用浮层
+            closeReferenceTooltip() {
+                this.showReferenceTooltip = false;
+            },
+
+            toggleSidebar() {
+                this.sidebarVisible = !this.sidebarVisible;
+            },
+
+            // 设置触摸事件处理
+            setupTouchEvents() {
+                let touchStartX = 0;
+                let touchEndX = 0;
+                const minSwipeDistance = 50; // 最小滑动距离
+
+                // 监听触摸开始事件
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, false);
+
+                // 监听触摸结束事件
+                document.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    this.handleSwipe(touchStartX, touchEndX, minSwipeDistance);
+                }, false);
+            },
+
+            // 处理滑动手势
+            handleSwipe(startX, endX, minDistance) {
+                const swipeDistance = endX - startX;
+
+                // 只在移动设备上处理滑动手势
+                if (window.innerWidth <= 768) {
+                    // 从左向右滑动（打开侧边栏）
+                    if (swipeDistance > minDistance && startX < 50) {
+                        this.sidebarVisible = true;
+                    }
+
+                    // 从右向左滑动（关闭侧边栏）
+                    if (swipeDistance < -minDistance && this.sidebarVisible) {
+                        this.sidebarVisible = false;
+                    }
+                }
+            },
+
+            // 设置视口高度变量
+            setViewportHeight() {
+                // 获取实际视口高度
+                let vh = window.innerHeight * 0.01;
+                // 设置CSS变量
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            },
+
+            // 提取公共方法：处理助手消息的引用信息
+            processAssistantMessage(message) {
+                if (message.role !== 'assistant') return message;
+
+                // 处理引用信息
+                if (message.reference) {
+                    try {
+                        // 判断reference是数组还是对象，进行适当处理
+                        if (Array.isArray(message.reference)) {
+                            // 数组格式的reference（来自getSessionList）
+                            message.chunks = message.reference;
+
+                            // 从chunks数组中提取文档信息生成doc_aggs
+                            const docMap = new Map();
+                            message.reference.forEach(chunk => {
+                                if (chunk && chunk.document_id && !docMap.has(chunk.document_id)) {
+                                    docMap.set(chunk.document_id, {
+                                        doc_id: chunk.document_id,
+                                        doc_name: chunk.document_name,
+                                        image_id: chunk.image_id,
+                                        dataset_id: chunk.dataset_id
+                                    });
+                                }
+                            });
+                            message.docs = Array.from(docMap.values());
+
+
+                        } else {
+                            // 对象格式的reference（来自实时响应）
+                            message.chunks = Array.isArray(message.reference.chunks) ? message.reference.chunks : [];
+                            message.docs = Array.isArray(message.reference.doc_aggs) ? message.reference.doc_aggs : [];
+
+
+                        }
+                    } catch (error) {
+                        console.error('处理引用信息出错:', error);
+                        message.chunks = [];
+                        message.docs = [];
+                    }
+                } else {
+                    // 如果没有reference对象，初始化为空数组，防止渲染错误
+                    message.chunks = [];
+                    message.docs = [];
+                }
+
+                // 确保不设置isRefreshMarkdown，避免渲染问题
+                message.isRefreshMarkdown = false;
+
+                return message;
+            },
+
+            getSessionIndex(sessionId) {
+                if (!sessionId) return -1;
+                return this.sessionList.findIndex(session => session.id === sessionId);
+            },
+
+            formatDateTime(dateStr) {
+                const date = new Date(dateStr);
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+
+                return `${year}-${month}-${day} ${hours}:${minutes}`;
+            },
+
+            // 新增方法：更新URL参数
+            updateUrlParams() {
+                if (typeof window === 'undefined') return;
+
+                try {
+                    const url = new URL(window.location.href);
+
+                    if (this.currentModel) {
+                        url.searchParams.set('model', this.currentModel);
+                    }
+
+                    if (this.currentAgentId) {
+                        url.searchParams.set('agentId', this.currentAgentId);
+                    }
+
+                    // 添加sessionId参数
+                    if (this.currentSessionId) {
+                        url.searchParams.set('sessionId', this.currentSessionId);
+                    } else {
+                        url.searchParams.delete('sessionId');
+                    }
+
+                    window.history.replaceState({}, '', url.toString());
+                } catch (error) {
+                    console.error('更新URL参数失败:', error);
+                }
+            },
+
+            handleScroll() {
+                const container = this.$refs.messagesContainer;
+                if (container) {
+                    // 如果消息内容未超过一屏，不显示按钮
+                    if (container.scrollHeight >= container.clientHeight) {
+
+                        // 否则，根据滚动位置决定是否显示按钮
+                        setTimeout(() => {
+                            this.showScrollToBottomButton =
+                                (container.scrollHeight - container.scrollTop - container.clientHeight) > 200;
+                        }, 1000);
+                    }
+                }
+            },
+
+            toggleSidebarCollapse() {
+                if (!this.isMobile) {
+                    // PC端折叠侧边栏
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                } else {
+                    // 移动端切换侧边栏显示状态
+                    this.sidebarVisible = !this.sidebarVisible;
+                }
+            },
+
+            // 新增清空会话ID方法
+            clearSessionId() {
+                this.currentSessionId = null;
+                this.showScrollToBottomButton = false;
+                if (this.isMobile) {
+                    this.sidebarVisible = false;
+                }
+                this.updateUrlParams();
+            },
+
+            // 根据悬停元素查找当前消息
+            getCurrentMessageByHoverElement(element) {
+                // 从引用图标向上查找到消息容器
+                const messageElement = element.closest('.message');
+                if (!messageElement) return null;
+
+                // 找到消息元素的内容部分
+                const contentElement = messageElement.querySelector('.message-content');
+                if (!contentElement) return null;
+
+                // 查找包含此HTML内容的消息
+                for (const message of this.currentSession.messages) {
+                    if (message.role === 'assistant') {
+                        const renderedContent = this.renderMarkdown(message.content);
+                        if (contentElement.innerHTML.includes(renderedContent.substring(0, 100)) ||
+                            renderedContent.includes(contentElement.innerHTML.substring(0, 100))) {
+                            return message;
+                        }
+                    }
+                }
+
+                // 返回最后一条助手消息
+                for (let i = this.currentSession.messages.length - 1; i >= 0; i--) {
+                    if (this.currentSession.messages[i].role === 'assistant') {
+                        return this.currentSession.messages[i];
+                    }
+                }
+
+                return null;
+            },
+
+            isSessionExists(sessionId) {
+                return this.getSessionIndex(sessionId) !== -1;
+            },
+
+            // 切换专家下拉菜单
+            toggleAgentDropdown() {
+                this.showAgentDropdown = !this.showAgentDropdown;
+            },
+
+            // 切换到选择的专家
+            switchToExpert(expert) {
+                this.currentChat = expert;
+                this.showAgentDropdown = false;
+                this.updateUrlParams()
+                this.getSessionList()
+            },
+
+            async handleLogout() {
+                // 关闭下拉菜单
+                this.showDropdown = false;
+                await window.jianghuAxios({
+                    data: {
+                        appData: {
+                            pageId: 'allPage',
+                            actionId: 'logout',
+                        }
+                    }
+                })
+
+                // 清除所有本地存储
+                localStorage.removeItem('xiaoxun_userId');
+                localStorage.removeItem('xiaoxun_authToken');
+                localStorage.removeItem('xiaoxun_currentModel');
+                localStorage.removeItem('xiaoxun_currentChat');
+                localStorage.removeItem('xiaoxun_currentSessionId');
+
+
+
+                window.location.reload();
+            },
+
+            // 处理登录成功
+            handleLoginSuccess(loginResult) {
+                // 登录成功后页面会自动刷新，这里可以添加额外的处理逻辑
+                console.log('登录成功', loginResult);
+            },
+            toggleSourceSidebar() {
+                this.sourceSidebarVisible = !this.sourceSidebarVisible;
+            },
+            updateSelectedSources(selectedItems) {
+                // 处理选中的知识库，更新到输入框组件
+                this.selectedKnowledgeBases = selectedItems;
+
+                // 如果有当前活跃的ChatInput组件实例，直接更新它的selectedItems
+                // 注意：这可能需要修改ChatInput组件以支持直接更新selectedItems
+                const chatInputInstance = this.$refs.chatInput;
+                if (chatInputInstance) {
+                    chatInputInstance.selectedItems = selectedItems;
+                }
+            },
+            showToast(message) {
+                // 显示通知
+                console.log('通知:', message);
+            },
+            openSourceDialog() {
+                // 打开知识库来源对话框
+                console.log('打开知识库来源对话框');
+            },
+        },
+        mounted() {
+            // 加载主题设置
+            this.loadTheme();
+
+            // 点击其他地方关闭下拉菜单
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.model-dropdown')) {
+                    this.showModelDropdown = false;
+                }
+                // 点击其他地方关闭引用浮层
+                if (!e.target.closest('.reference-icon') && !e.target.closest('.reference-tooltip')) {
+                    this.showReferenceTooltip = false;
+                }
+            });
+
+            this.messageEl = this.$el.querySelector('.session-messages');
+
+            if (this.messageEl) {
+                // 添加鼠标悬停事件监听器
+                this.messageEl.addEventListener('mouseover', (e) => {
+                    if (e.target.closest('.reference-icon')) {
+                        this.handleReferenceHover(e, this.getCurrentMessageByHoverElement(e.target));
+                    }
+                });
+
+                // 添加鼠标移出事件监听器
+                this.messageEl.addEventListener('mouseout', (e) => {
+                    const relatedTarget = e.relatedTarget;
+
+                    // 确保不关闭引用浮层
+                    if (
+                        !relatedTarget ||
+                        (!relatedTarget.closest('.reference-icon') && !relatedTarget.closest('.reference-tooltip'))
+                    ) {
+                        setTimeout(() => {
+                            const hoveredTooltip = document.querySelector('.reference-tooltip:hover');
+                            const hoveredIcon = document.querySelector('.reference-icon:hover');
+                            if (!hoveredTooltip && !hoveredIcon) {
+                                this.showReferenceTooltip = false;
+                            }
+                        }, 100);
+                    }
+                });
+
+                // 为移动设备添加触摸支持
+                this.messageEl.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('.reference-icon')) {
+                        this.handleReferenceHover(e, this.getCurrentMessageByHoverElement(e.target));
+                        e.preventDefault(); // 防止触发点击事件
+                    } else if (!e.target.closest('.reference-tooltip')) {
+                        this.showReferenceTooltip = false;
+                    }
+                });
+
+                // 监听窗口大小变化
+                window.addEventListener('resize', () => {
+                    this.setViewportHeight();
+                });
+
+                // 添加触摸事件处理
+                this.setupTouchEvents();
+            }
+
+            // 设备方向改变处理
+            window.addEventListener('orientationchange', () => {
+                this.setViewportHeight();
+                setTimeout(() => {
+                    this.scrollToBottom();
+                }, 300);
+            });
+
+            // 初始滚动到底部
+            this.scrollToBottom();
+
+            // 监听滚动事件
+            const container = this.$refs.messagesContainer;
+            if (container) {
+                container.addEventListener('scroll', this.handleScroll);
+            }
+
+            // 添加对可折叠组件的点击处理
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.collapsible-header')) {
+                    const wrapper = e.target.closest('.collapsible-wrapper');
+                    if (wrapper) {
+                        wrapper.classList.toggle('active');
+                        const content = wrapper.querySelector('.collapsible-content');
+                        const toggleIcon = wrapper.querySelector('.toggle-icon');
+                        if (content && toggleIcon) {
+                            if (wrapper.classList.contains('active')) {
+                                toggleIcon.classList.remove('fa-chevron-down');
+                                toggleIcon.classList.add('fa-chevron-up');
+                            } else {
+                                toggleIcon.classList.remove('fa-chevron-up');
+                                toggleIcon.classList.add('fa-chevron-down');
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 初始化滚动监听
+            this.$nextTick(() => {
+                this.initScrollListeners();
+            });
+        },
+        beforeDestroy() {
+            const container = this.$refs.messagesContainer;
+            if (container) {
+                container.removeEventListener('scroll', this.handleScroll);
+            }
+
+            // 移除滚动事件监听
+            const sessionHistoryEl = document.querySelector('.session-history');
+            if (sessionHistoryEl) {
+                sessionHistoryEl.removeEventListener('scroll', this.handleSessionHistoryScroll);
+            }
+
+            const notesListEl = document.querySelector('.notes-list');
+            if (notesListEl) {
+                notesListEl.removeEventListener('scroll', this.handleNotesListScroll);
+            }
+        }
+    });
+</script>
+
+{% endblock %}
+
+<style>
+    /* ... existing code ... */
+
+    .loading-more-indicator {
+        font-size: 12px;
+        color: #666;
+        padding: 8px 0;
+    }
+
+    .no-more-data {
+        color: #999;
+        font-size: 12px;
+        padding: 8px 0;
+    }
+</style>

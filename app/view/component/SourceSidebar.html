@@ -1,0 +1,563 @@
+<script type="text/html" id="source-sidebar">
+  <!-- 
+    右侧边栏组件 - 文档文档选择
+    此组件用于显示、搜索和选择文档，支持全选和单选功能。
+    已选文档会在聊天输入框中显示标签，并在发送消息时作为参考源。
+  -->
+<v-navigation-drawer class="source-sidebar" :value="isOpen" app right :temporary="isMobile"
+:permanent="!isMobile"
+  :class="`${!isMobile && '!sticky top-0'}`" :style="{transform: isOpen ? 'none' : 'translateX(100%)'}"
+  :width="showPreview ? '600' : (isOpen ? '320' : '0')">
+  <!-- 侧边栏头部 -->
+  <v-app-bar flat dense class="source-header">
+    <v-btn v-if="showPreview" icon @click="closePreview" class="mr-2">
+      <v-icon size="20">fas fa-arrow-left</v-icon>
+    </v-btn>
+    <v-toolbar-title class="title-text font-weight-medium">{{ showPreview ? currentPreviewItem.name : '命定神学文档'
+      }}</v-toolbar-title>
+    <v-spacer></v-spacer>
+    <v-btn v-if="!showPreview" icon @click="toggleSidebar" class="close-btn">
+      <v-icon size="20">fas fa-times</v-icon>
+    </v-btn>
+  </v-app-bar>
+
+  <!-- 预览iframe -->
+  <div v-if="showPreview" class="iframe-container">
+    <iframe ref="documentIframe" :src="previewUrl" frameborder="0" class="document-preview-iframe"
+      @load="handleIframeLoaded" v-show="iframeLoaded"></iframe>
+    <div class="text-center py-8" v-show="!iframeLoaded">
+      <i class="fas fa-spinner fa-spin text-2xl"></i>
+    </div>
+  </div>
+
+  <div v-if="isLoading" class="text-center py-8">
+    <i class="fas fa-spinner fa-spin text-2xl"></i>
+  </div>
+  <!-- 文档列表内容，在预览模式下隐藏 -->
+  <div v-if="!showPreview && !isLoading">
+    <!-- 搜索框 -->
+    <div class="px-4 pt-2 pb-3">
+      <v-text-field v-model="searchQuery" flat solo hide-details clearable placeholder="搜索文档..."
+        prepend-inner-icon="fas fa-search" class="search-field rounded-lg" height="40"></v-text-field>
+    </div>
+
+    <!-- 选择所有文档 -->
+    <v-list-item @click="toggleSelectAll" class="px-4 py-2 select-all-item">
+      <v-list-item-action class="!mr-2">
+        <v-checkbox :input-value="isAllSelected"></v-checkbox>
+      </v-list-item-action>
+      <v-list-item-content>
+        <v-list-item-title class="font-weight-medium">选择所有文档</v-list-item-title>
+        <v-list-item-subtitle class="caption">{{ selectedItems.length }}/{{ knowledgeBaseList.length }}
+          已选择</v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
+
+    <v-divider></v-divider>
+
+    <!-- 文档列表 -->
+    <div v-if="filteredGroupedKnowledgeList.length === 0 && !isLoading" class="pa-6 text-center body-2 grey--text">
+      没有匹配的文档
+    </div>
+    <v-list class="overflow-y-auto h-[calc(100vh-200px)]" v-else>
+      <!-- 分类组 -->
+      <div v-for="(category, catIndex) in filteredGroupedKnowledgeList" :key="'cat-'+catIndex" class="category-group">
+        <!-- 分类标题 -->
+        <v-list-group :value="isCategoryExpanded(category.categoryId)" no-action class="category-header"
+          @click.native="toggleCategory(category.categoryId)">
+          <template v-slot:activator>
+            <v-list-item-action class="mr-3">
+              <v-checkbox :input-value="isCategoryAllSelected(category)"
+                :indeterminate="isCategoryPartialSelected(category)"
+                @click.stop="toggleSelectCategory(category)"></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title class="font-weight-medium">{{ category.categoryName }}</v-list-item-title>
+              <v-list-item-subtitle class="caption">{{ category.items.filter(item => isItemSelected(item)).length }}/{{
+                category.items.length }} 已选择</v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+
+          <!-- 分类下的文档列表 -->
+          <v-list-item v-for="(item, index) in category.items" :key="category.categoryId + '-' + index"
+            class="pl-10 pr-4 py-2 category-item">
+            <v-list-item-action class="mr-3" @click.stop="toggleSelectItem(item)">
+              <v-checkbox :input-value="isItemSelected(item)"></v-checkbox>
+            </v-list-item-action>
+
+            <v-list-item-content @click.stop="previewDocument(item)">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-list-item-title class="body-2 doc-title" v-bind="attrs" v-on="on">{{ item.name
+                    }}</v-list-item-title>
+                </template>
+                <span>{{ item.name }}</span>
+              </v-tooltip>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-group>
+      </div>
+    </v-list>
+  </div>
+</v-navigation-drawer>
+</script>
+
+<script>
+  Vue.component('source-sidebar', {
+    template: '#source-sidebar',
+    props: {
+      knowledgeBaseList: {
+        type: Array,
+        default: () => []
+      },
+      theme: {
+        type: String,
+        default: 'dark'
+      },
+      isOpen: {
+        type: Boolean,
+        default: true
+      },
+      isLoading: {
+        type: Boolean,
+        default: false
+      },
+      initialSelectedItems: {
+        type: Array,
+        default: () => []
+      }
+    },
+    data() {
+      return {
+        selectedItems: [],
+        searchQuery: '',
+        showSearch: false,
+        expandedCategories: {}, // 存储已展开的分类
+        showPreview: false, // 控制是否显示预览
+        currentPreviewItem: null, // 当前预览的文档
+        previewUrl: '', // 预览URL
+        isMobile: window.innerWidth < 768,
+        iframeLoaded: false, // 控制iframe是否加载完成
+        storageKey: 'xiaoxun_source-sidebar-state', // 用于localStorage的键
+        _savedSelectedItemIds: null // 临时保存的选中项ID
+      };
+    },
+    created() {
+      // 从localStorage恢复状态，需要在mounted之前调用，避免被默认值覆盖
+      this.restoreState();
+
+      // 确保在组件创建后就加载保存的状态
+      this.$nextTick(() => {
+        // 如果恢复的状态中没有某些分类，则初始化它们为展开状态
+        this.groupedKnowledgeList.forEach(group => {
+          if (this.expandedCategories[group.categoryId] === undefined) {
+            this.$set(this.expandedCategories, group.categoryId, true);
+          }
+        });
+      });
+    },
+    mounted() {
+      this.$nextTick(() => {
+        // 检查是否已经从localStorage恢复了选中状态
+        if (this.selectedItems.length === 0 && this.knowledgeBaseList && this.knowledgeBaseList.length > 0) {
+          // 只有在没有恢复选中状态的情况下，才默认选择所有文档
+          this.selectedItems = [...this.knowledgeBaseList];
+          this.$emit('update:selected-items', this.selectedItems);
+        } else {
+          // 如果初始时没有数据，则使用watch监听变化
+          this.setupWatcher();
+        }
+      });
+    },
+    computed: {
+      // 按分类分组的文档列表
+      groupedKnowledgeList() {
+        const grouped = {};
+
+        // 先对未分类的进行处理
+        const uncategorized = {
+          categoryId: 'uncategorized',
+          categoryName: '未分类',
+          items: []
+        };
+
+        this.knowledgeBaseList.forEach(item => {
+          if (!item.categoryId) {
+            uncategorized.items.push(item);
+          } else {
+            if (!grouped[item.categoryId]) {
+              grouped[item.categoryId] = {
+                categoryId: item.categoryId,
+                categoryName: item.categoryName || `分类 ${item.categoryId}`,
+                items: []
+              };
+            }
+            grouped[item.categoryId].items.push(item);
+          }
+        });
+
+        // 转换为数组
+        const result = Object.values(grouped);
+
+        // 如果有未分类项目，添加到最后
+        if (uncategorized.items.length > 0) {
+          result.push(uncategorized);
+        }
+
+        return result;
+      },
+      filteredKnowledgeList() {
+        const query = this.searchQuery.toLowerCase().trim();
+        if (!query) return this.knowledgeBaseList;
+        return this.knowledgeBaseList.filter(item => {
+          const name = (item.name || item.doc_name || '').toLowerCase();
+          return name.includes(query);
+        });
+      },
+      // 过滤并按分类分组
+      filteredGroupedKnowledgeList() {
+        const query = this.searchQuery.toLowerCase().trim();
+
+        // 如果没有搜索，直接返回分组结果
+        if (!query) return this.groupedKnowledgeList;
+
+        // 过滤每个分组中的文档
+        return this.groupedKnowledgeList.map(group => {
+          const filteredItems = group.items.filter(item => {
+            const name = (item.name || item.doc_name || '').toLowerCase();
+            return name.includes(query);
+          });
+
+          return {
+            ...group,
+            items: filteredItems
+          };
+        }).filter(group => group.items.length > 0); // 过滤掉没有匹配项的分组
+      },
+      isAllSelected() {
+        return this.selectedItems.length === this.knowledgeBaseList.length && this.knowledgeBaseList.length > 0;
+      }
+    },
+    watch: {
+      // 监听selectedItems和expandedCategories的变化，保存状态
+      selectedItems: {
+        handler() {
+          this.saveState();
+        },
+        deep: true
+      },
+      expandedCategories: {
+        handler() {
+          this.saveState();
+        },
+        deep: true
+      }
+    },
+    methods: {
+      setupWatcher() {
+        const unwatch = this.$watch('knowledgeBaseList', (newValue) => {
+          if (newValue && newValue.length > 0) {
+            // 先检查是否有保存的选中项ID需要恢复
+            if (this._savedSelectedItemIds && Array.isArray(this._savedSelectedItemIds)) {
+              this.restoreSelectedItems(this._savedSelectedItemIds);
+              delete this._savedSelectedItemIds; // 清理临时保存的ID
+            }
+            // 如果没有已恢复的选中项，则默认全选
+            else if (this.selectedItems.length === 0) {
+              this.selectedItems = [...newValue];
+              this.$emit('update:selected-items', this.selectedItems);
+            }
+            // 数据加载后解除监听
+            unwatch();
+          }
+        });
+      },
+      // 切换分类的展开/折叠状态
+      toggleCategory(categoryId) {
+        // 确保使用Vue的响应式方法更新对象
+        const newValue = !this.expandedCategories[categoryId];
+        this.$set(this.expandedCategories, categoryId, newValue);
+        // 手动触发保存状态
+        this.saveState();
+      },
+      // 检查分类是否展开（确保返回布尔值）
+      isCategoryExpanded(categoryId) {
+        // 如果没有定义，默认为true
+        return this.expandedCategories[categoryId] !== undefined ? !!this.expandedCategories[categoryId] : true;
+      },
+      toggleSidebar() {
+        this.showPreview = false
+        this.$emit('toggle-sidebar');
+      },
+      toggleSearch() {
+        this.showSearch = !this.showSearch;
+        if (this.showSearch) {
+          this.$nextTick(() => {
+            const searchInput = this.$el.querySelector('input');
+            if (searchInput) searchInput.focus();
+          });
+        }
+      },
+      isItemSelected(item) {
+        return this.selectedItems.some(selected =>
+          (selected.id === item.id) || (selected.id === item.id)
+        );
+      },
+      toggleSelectItem(item) {
+        const isSelected = this.isItemSelected(item);
+
+        if (isSelected) {
+          // 已选中，取消选择
+          this.selectedItems = this.selectedItems.filter(selected =>
+            (selected.id !== item.id) && (selected.id !== item.id)
+          );
+        } else {
+          this.selectedItems.push(item);
+        }
+
+        this.$emit('update:selected-items', this.selectedItems);
+        this.saveState();
+      },
+      toggleSelectAll() {
+        if (this.isAllSelected) {
+          // 全部取消选择
+          this.selectedItems = [];
+        } else {
+          this.selectedItems = [...this.knowledgeBaseList];
+        }
+
+        this.$emit('update:selected-items', this.selectedItems);
+        this.saveState();
+      },
+      // 切换分类下所有项目的选择状态
+      toggleSelectCategory(category) {
+        const allSelected = category.items.every(item => this.isItemSelected(item));
+
+        if (allSelected) {
+          // 如果全部选中，则取消全部选择
+          this.selectedItems = this.selectedItems.filter(selected =>
+            !category.items.some(item => item.id === selected.id)
+          );
+        } else {
+          // 否则全部选中
+          const itemsToAdd = category.items.filter(item => !this.isItemSelected(item));
+          this.selectedItems = [...this.selectedItems, ...itemsToAdd];
+        }
+
+        this.$emit('update:selected-items', this.selectedItems);
+        this.saveState();
+      },
+      // 检查分类下所有项目是否全部选中
+      isCategoryAllSelected(category) {
+        return category.items.length > 0 && category.items.every(item => this.isItemSelected(item));
+      },
+      // 检查分类下是否有部分项目被选中
+      isCategoryPartialSelected(category) {
+        const selectedCount = category.items.filter(item => this.isItemSelected(item)).length;
+        return selectedCount > 0 && selectedCount < category.items.length;
+      },
+      addSource() {
+        // 发出事件，让父组件处理添加文档的逻辑
+        this.$emit('add-source');
+      },
+      showToastMessage(message) {
+        this.$emit('show-toast', message);
+      },
+      // 预览文档
+      previewDocument(item, content) {
+
+        // item==string，就查knowledgeBaseList，取出item
+        if (typeof item === 'string') {
+          item = this.knowledgeBaseList.find(kbItem => kbItem.id === item);
+        }
+
+        if (!item || !item.articleId) {
+          this.showToastMessage('该文档没有关联的文章ID');
+          return;
+        }
+
+        // 保存当前状态，以便在预览时保留
+        this.saveState();
+        if (content) {
+          const maskText = content.split('<p>')[1].substring(0, 10)
+          this.maskText = maskText
+        }
+
+        if (this.previewUrl.includes(item.sourcePagePath)) {
+          this.handleIframeLoaded()
+          return;
+        }
+
+        this.previewUrl = `<$ ctx.app.config.ragflow.mingdingBaseUrl $>${item.sourcePagePath}`;
+        this.currentPreviewItem = item;
+        this.showPreview = true;
+        this.iframeLoaded = false; // 重置iframe加载状态
+        this.$emit('preview-state-change', true); // 通知预览状态变化
+      },
+      // 关闭预览
+      closePreview() {
+        this.showPreview = false;
+        this.currentPreviewItem = null;
+        this.previewUrl = '';
+        this.iframeLoaded = false; // 重置iframe加载状态
+        this.$emit('preview-state-change', false); // 通知预览状态变化
+      },
+      handleIframeLoaded() {
+        this.iframeLoaded = true;
+
+        if (this.maskText) {
+          this.$refs.documentIframe.contentWindow.postMessage({
+            action: 'scrollMarkText',
+            content: this.maskText
+          }, '<$ ctx.app.config.ragflow.mingdingBaseUrl $>');
+        }
+      },
+      // 保存分类折叠和选中状态到localStorage
+      saveState() {
+        try {
+          // 只保存selectedItems的id列表和expandedCategories
+          const state = {
+            selectedItemIds: this.selectedItems.map(item => item.id || item._id), // 确保使用正确的ID字段
+            expandedCategories: { ...this.expandedCategories } // 创建一个副本确保保存完整对象
+          };
+          localStorage.setItem(this.storageKey, JSON.stringify(state));
+          console.log('保存状态:', state); // 调试用
+        } catch (error) {
+          console.error('保存状态失败:', error);
+        }
+      },
+
+      // 从localStorage恢复状态
+      restoreState() {
+        try {
+          const savedState = localStorage.getItem(this.storageKey);
+          if (savedState) {
+            const state = JSON.parse(savedState);
+            console.log('恢复状态:', state); // 调试用
+
+            // 恢复分类折叠状态
+            if (state.expandedCategories) {
+              // 使用Vue的响应式方法重建对象
+              Object.keys(state.expandedCategories).forEach(key => {
+                this.$set(this.expandedCategories, key, state.expandedCategories[key]);
+              });
+            }
+
+            // 如果有已保存的选中项且知识库已加载，立即恢复
+            if (state.selectedItemIds && Array.isArray(state.selectedItemIds) &&
+              this.knowledgeBaseList && this.knowledgeBaseList.length > 0) {
+              this.restoreSelectedItems(state.selectedItemIds);
+              return true; // 标记已恢复状态
+            } else if (state.selectedItemIds && Array.isArray(state.selectedItemIds)) {
+              // 保存ID，等知识库加载后再处理
+              this._savedSelectedItemIds = state.selectedItemIds;
+              return true; // 标记已保存状态，等待知识库加载
+            }
+          }
+          return false; // 没有恢复任何状态
+        } catch (error) {
+          console.error('恢复侧边栏状态失败:', error);
+          return false;
+        }
+      },
+
+      // 根据保存的ID恢复选中项
+      restoreSelectedItems(savedIds) {
+        if (!savedIds || !Array.isArray(savedIds) || savedIds.length === 0) return;
+
+        // 根据保存的ID找到对应的完整项目，支持多种ID格式
+        this.selectedItems = this.knowledgeBaseList.filter(item =>
+          savedIds.includes(item.id) || (item._id && savedIds.includes(item._id))
+        );
+
+        // 更新选中状态
+        this.$emit('update:selected-items', this.selectedItems);
+      }
+    }
+  });
+</script>
+
+<style>
+  .source-sidebar {
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+    z-index: 100;
+  }
+
+  .source-header {}
+
+  .title-text {
+    font-size: 16px;
+  }
+
+  .search-field .v-input__slot {
+    min-height: 40px !important;
+  }
+
+  .theme--light.v-text-field--solo>.v-input__control>.v-input__slot {
+    background-color: #f5f5f5;
+  }
+
+  .search-field .v-icon {
+    font-size: 14px;
+  }
+
+  .search-field input::placeholder {
+    font-size: 14px;
+  }
+
+  .search-field input.active {
+    border: none;
+    outline: none;
+  }
+
+  .select-all-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .category-header {
+    margin-bottom: 4px;
+  }
+
+  .category-header .v-list-item__title {
+    font-size: 14px;
+  }
+
+  .category-header .v-list-item__subtitle {
+    font-size: 12px;
+  }
+
+  .category-item {
+    min-height: 40px !important;
+  }
+
+  .category-item .v-list-item__title {
+    font-size: 13px;
+  }
+
+  /* 改进checkboxes样式 */
+  .v-input--selection-controls__ripple {
+    transform: scale(0.8);
+  }
+
+  /* 文档标题样式，显示为可点击 */
+  .doc-title {
+    cursor: pointer;
+  }
+
+  .doc-title:hover {
+    text-decoration: underline;
+  }
+
+  /* iframe容器 */
+  .iframe-container {
+    height: calc(100vh - 48px);
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .document-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+</style>

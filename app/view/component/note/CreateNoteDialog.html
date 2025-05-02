@@ -1,0 +1,240 @@
+<script type="text/html" id="create-note-dialog">
+  <!-- 笔记创建/编辑对话框 -->
+<v-dialog v-model="show" max-width="800px" scrollable>
+  <v-card>
+    <v-card-title class="headline">
+      <div class="d-flex flex-1 align-center">
+        <span>{{ isEdit ? '编辑笔记' : '创建笔记' }}</span>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="closeDialog">
+          <v-icon>fas fa-times</v-icon>
+        </v-btn>
+      </div>
+    </v-card-title>
+    <v-divider></v-divider>
+    <v-card-text>
+      <v-container>
+        <v-row>
+          <v-col cols="12">
+            <v-text-field
+              v-model="noteData.title"
+              label="笔记标题"
+              required
+              outlined
+              dense
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <div class="editor-container">
+              <!-- 使用SimpleMDE编辑器替代原文本框 -->
+              <textarea id="markdown-editor"></textarea>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card-text>
+    <v-divider></v-divider>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn text @click="closeDialog">取消</v-btn>
+      <v-btn 
+        color="primary" 
+        :loading="saving" 
+        :disabled="!noteData.title || !noteData.content || saving" 
+        @click="saveNote"
+      >
+        保存
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+</script>
+
+<!-- 引入 SimpleMDE 的 CSS 和 JS -->
+<link rel="stylesheet" href="/<$ ctx.app.config.appId $>/public/css/simplemde.min.css">
+<script src="/<$ ctx.app.config.appId $>/public/js/simplemde.min.js"></script>
+
+<script>
+  Vue.component('create-note-dialog', {
+    template: '#create-note-dialog',
+    props: {
+      show: {
+        type: Boolean,
+        default: false
+      },
+      note: {
+        type: Object,
+        default: () => ({
+          id: null,
+          title: '',
+          content: '',
+          createTime: new Date().toISOString()
+        })
+      },
+      isEdit: {
+        type: Boolean,
+        default: false
+      }
+    },
+    data() {
+      return {
+        noteData: {
+          id: null,
+          title: '',
+          content: '',
+        },
+        saving: false,
+        mdEditor: null
+      }
+    },
+    watch: {
+      show(val) {
+        if (val) {
+          this.noteData = {
+            id: this.note.id || null,
+            title: this.note.title || '',
+            content: this.note.content || '',
+          };
+          
+          this.$nextTick(() => {
+            this.initEditor();
+          });
+        }
+      }
+    },
+    methods: {
+      initEditor() {
+        if (this.mdEditor) {
+          this.mdEditor.toTextArea();
+        }
+        
+        this.mdEditor = new SimpleMDE({
+          element: document.getElementById('markdown-editor'),
+          initialValue: this.noteData.content,
+          spellChecker: false,
+          autofocus: true,
+          placeholder: '在此输入笔记内容...',
+          toolbar: [
+            'bold', 'italic', 'heading', '|',
+            'quote', 'unordered-list', 'ordered-list', '|',
+            'link', 'code', 'table', '|',
+            'preview', 'side-by-side', 'fullscreen', '|',
+            'guide'
+          ],
+          status: ['autosave', 'lines', 'words', 'cursor'],
+          renderingConfig: {
+            singleLineBreaks: false,
+            codeSyntaxHighlighting: true,
+          },
+          autosave: {
+            enabled: true,
+            uniqueId: 'note-editor',
+            delay: 1000,
+          }
+        });
+        
+        this.mdEditor.codemirror.on('change', () => {
+          this.noteData.content = this.mdEditor.value();
+        });
+      },
+      
+      closeDialog() {
+        if (this.mdEditor) {
+          this.mdEditor.toTextArea();
+          this.mdEditor = null;
+        }
+        this.$emit('close');
+      },
+
+      async saveNote() {
+        this.noteData.content = this.mdEditor ? this.mdEditor.value() : '';
+        
+        if (!this.noteData.title || !this.noteData.content) {
+          window.vtoast.error('请填写笔记标题和内容');
+          return;
+        }
+
+        this.saving = true;
+        
+        try {
+          const userId = this.$parent.$parent.userId;
+          const noteToSave = {
+            ...this.noteData,
+            userId: userId,
+            userName: userId,
+            createTime: this.noteData.id ? undefined : new Date().toISOString()
+          };
+
+          const actionId = this.isEdit ? 'updateNote' : 'saveNote';
+          const requestData = {
+            appData: {
+              pageId: 'allPage',
+              actionId: actionId,
+              actionData: noteToSave
+            }
+          };
+
+          if (this.isEdit) {
+            requestData.appData.where = {
+              id: this.noteData.id
+            };
+          }
+
+          await window.jianghuAxios({
+            data: requestData
+          });
+
+          this.$emit('saved');
+          this.closeDialog();
+          window.vtoast.success(this.isEdit ? '笔记已更新' : '笔记已创建');
+        } catch (error) {
+          console.error('保存笔记失败:', error);
+          window.vtoast.error('保存笔记失败');
+        } finally {
+          this.saving = false;
+        }
+      }
+    }
+  });
+</script>
+
+<style>
+.editor-container {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* SimpleMDE 样式调整 */
+.CodeMirror {
+  height: 300px;
+}
+
+.editor-toolbar {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+/* 深色主题支持 */
+[data-theme="dark"] .editor-toolbar {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+[data-theme="dark"] .CodeMirror {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border-color: #333;
+}
+
+[data-theme="dark"] .CodeMirror-cursor {
+  border-color: #fff;
+}
+
+[data-theme="dark"] .editor-preview {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+</style> 

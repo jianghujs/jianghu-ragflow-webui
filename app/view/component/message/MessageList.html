@@ -1,0 +1,57 @@
+<script type="text/html" id="message-list">
+  <div class="flex-1 overflow-y-auto" ref="messagesContainer">
+    <div class="space-y-4 p-4">
+      <div v-for="(message, index) in messages" :key="index" class="message-item">
+        <message-item 
+          :message="message"
+          :theme="theme"
+          @retry="handleRetry"
+          @copy="handleCopy"
+        />
+      </div>
+    </div>
+  </div>
+</script>
+
+<script>
+  Vue.component('message-list', {
+    template: '#message-list',
+    props: {
+      messages: {
+        type: Array,
+        default: () => []
+      },
+      theme: {
+        type: String,
+        default: 'dark'
+      }
+    },
+    methods: {
+      handleRetry(message) {
+        this.$emit('retry', message);
+      },
+      handleCopy(text) {
+        this.$emit('copy', text);
+      },
+      scrollToBottom() {
+        this.$nextTick(() => {
+          const container = this.$refs.messagesContainer;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        });
+      }
+    },
+    watch: {
+      messages: {
+        handler() {
+          this.scrollToBottom();
+        },
+        deep: true
+      }
+    },
+    mounted() {
+      this.scrollToBottom();
+    }
+  });
+</script> 
