@@ -369,7 +369,7 @@
                     <h3 class="flex-1">
                         引用内容
                     </h3>
-                    <v-btn x-small @click="sourceSidebarVisible=true;$refs.sourceSidebar.previewDocument(currentChunk.document_id, currentReferenceContent)">
+                    <v-btn x-small @click="previewDocument(currentChunk)">
                         <i class="fas fa-external-link-alt"></i>
                         查看原文
                     </v-btn>
@@ -1503,6 +1503,12 @@
                 // 打开知识库来源对话框
                 console.log('打开知识库来源对话框');
             },
+
+            previewDocument(chunk) {
+                this.sourceSidebarVisible = true;
+                const ext = chunk.document_name.includes('.') ? chunk.document_name.split('.').pop() : 'pdf';
+                window.open(`<$ ctx.app.config.ragflow.baseUrl $>/document/${chunk.id}?ext=${ext}&prefix=file`, '_blank');
+            }
         },
         mounted() {
             // 加载主题设置

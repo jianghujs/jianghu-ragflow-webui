@@ -23,7 +23,7 @@ class ChatController extends Controller {
     // 从请求中获取agentId，如果没有则使用默认值
     const { agentId: chatId } = ctx.request.body;
 
-    const response = await axios.post(`${baseUrl}/chats/${chatId}/sessions`, {
+    const response = await axios.post(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
       name: "新建聊天",
       user_id: deviceId
     }, {
@@ -43,7 +43,7 @@ class ChatController extends Controller {
     const { baseUrl, apiKey } = app.config.ragflow;
     const { sessionId, md_sessionName, agentId: chatId } = ctx.request.body;
 
-    await axios.put(`${baseUrl}/chats/${chatId}/sessions/${sessionId}`, {
+    await axios.put(`${baseUrl}/api/v1/chats/${chatId}/sessions/${sessionId}`, {
       name: md_sessionName
     }, {
       headers: {
@@ -61,7 +61,7 @@ class ChatController extends Controller {
     const { sessionId, agentId: chatId } = ctx.request.body;
     const deviceId = await this.getDeviceId();
 
-    await axios.delete(`${baseUrl}/chats/${chatId}/sessions`, {
+    await axios.delete(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ class ChatController extends Controller {
     const { agentId: chatId } = ctx.request.body;
     const { page = 1, page_size = 1000 } = ctx.query;
 
-    const response = await axios.get(`${baseUrl}/chats/${chatId}/sessions`, {
+    const response = await axios.get(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`
       },
@@ -123,7 +123,7 @@ class ChatController extends Controller {
       return;
     }
 
-    const response = await axios.get(`${baseUrl}/chats/${chatId}/sessions`, {
+    const response = await axios.get(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`
       },
@@ -178,7 +178,7 @@ class ChatController extends Controller {
       requestBody.model = model;
     }
 
-    const response = await axios.post(`${baseUrl}/chats/${chatId}/completions`, 
+    const response = await axios.post(`${baseUrl}/api/v1/chats/${chatId}/completions`, 
       requestBody, 
       { 
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, 

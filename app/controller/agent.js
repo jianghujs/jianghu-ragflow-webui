@@ -13,7 +13,7 @@ class AgentController extends Controller {
     const { baseUrl, apiKey } = app.config.ragflow;
     const { agentId, userId } = ctx.request.body;
     try {
-      const response = await axios.post(`${baseUrl}/agents/${agentId}/sessions?user_id=${userId}`, {
+      const response = await axios.post(`${baseUrl}/api/v1/agents/${agentId}/sessions?user_id=${userId}`, {
         lang: "Chinese",
       }, { 
         headers: { 
@@ -49,7 +49,7 @@ class AgentController extends Controller {
     }
     try {
       // TODO: 没有这个api
-      await axios.put(`${baseUrl}/agents/${agentId}/sessions/${sessionId}`, {
+      await axios.put(`${baseUrl}/api/v1/agents/${agentId}/sessions/${sessionId}`, {
         message: JSON.stringify(session.messages)
       }, {
         headers: {
@@ -72,7 +72,7 @@ class AgentController extends Controller {
     const { sessionId, agentId } = ctx.request.body;
 
     try {
-      await axios.delete(`${baseUrl}/agents/${agentId}/sessions`, {
+      await axios.delete(`${baseUrl}/api/v1/agents/${agentId}/sessions`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
@@ -99,7 +99,7 @@ class AgentController extends Controller {
     const { page = 1, page_size = 1000 } = ctx.query;
 
     try {
-      const response = await axios.get(`${baseUrl}/agents/${agentId}/sessions`, {
+      const response = await axios.get(`${baseUrl}/api/v1/agents/${agentId}/sessions`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`
         },
@@ -107,6 +107,7 @@ class AgentController extends Controller {
           user_id: userId,
           orderby: 'update_time',
           desc: true,
+          dsl: false,
           page,
           page_size
         }
@@ -161,7 +162,7 @@ class AgentController extends Controller {
     });
   
     try {
-      const response = await axios.post(`${baseUrl}/agents/${agentId}/completions`, 
+      const response = await axios.post(`${baseUrl}/api/v1/agents/${agentId}/completions`, 
         { 
           lang: "Chinese", 
           question: `${message}`, 
@@ -207,7 +208,7 @@ class AgentController extends Controller {
     }
 
     try {
-      const response = await axios.get(`${baseUrl}/agents/${agentId}/sessions`, {
+      const response = await axios.get(`${baseUrl}/api/v1/agents/${agentId}/sessions`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`
         },
