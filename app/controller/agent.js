@@ -235,8 +235,8 @@ class AgentController extends Controller {
         create_date: session.create_date,
         dialog_id: agentId,
         user_id: userId,
-        message: JSON.stringify(session.messages || []),
-        reference: JSON.stringify(session.dsl.reference || [])
+        messages: session.messages || [],
+        reference: session.dsl.reference || []
       };
 
       this.ctx.body = sessionObj;

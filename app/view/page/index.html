@@ -862,19 +862,19 @@
                         id: sessionId
                     });
                     const sessionDetail = response.data || {}
-                    sessionDetail.messages = JSON.parse(sessionDetail.message || '[]')
-                    sessionDetail.reference = JSON.parse(sessionDetail.reference || '[]')
-                    sessionDetail.reference = sessionDetail.reference.filter(item => item.chunks.length > 0)
 
-                    let referenceIndex = 0;
-                    sessionDetail.messages = sessionDetail.messages.map(message => {
-                        if (message.role == 'assistant' && message.content.includes('$$')) {
-                            message.reference = sessionDetail.reference[referenceIndex];
-                            referenceIndex++;
-                        }
-                        return message;
-                    });
+                    if (sessionDetail.reference) {
+                        sessionDetail.reference = sessionDetail.reference.filter(item => item.chunks.length > 0)
 
+                        let referenceIndex = 0;
+                        sessionDetail.messages = sessionDetail.messages.map(message => {
+                            if (message.role == 'assistant' && message.content.includes('$$')) {
+                                message.reference = sessionDetail.reference[referenceIndex];
+                                referenceIndex++;
+                            }
+                            return message;
+                        });
+                    }
                     // 更新当前会话的详细信息
                     const sessionIndex = this.sessionList.findIndex(s => s.id === sessionId);
                     if (sessionIndex !== -1) {

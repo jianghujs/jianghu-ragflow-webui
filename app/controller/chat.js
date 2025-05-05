@@ -115,7 +115,7 @@ class ChatController extends Controller {
     const deviceId = await this.getDeviceId();
     
     // 从请求中获取agentId和sessionId
-    const { agentId: chatId, sessionId } = ctx.request.body;
+    const { agentId: chatId, id: sessionId } = ctx.request.body;
 
     if (!sessionId) {
       ctx.status = 400;
@@ -133,7 +133,9 @@ class ChatController extends Controller {
       }
     });
 
-    this.ctx.body = response.data.data[0] || {};
+    const data = response.data.data[0] || {}
+
+    this.ctx.body = data;
   }
 
   async sendMessage() {
