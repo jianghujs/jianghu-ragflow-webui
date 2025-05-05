@@ -716,7 +716,7 @@
                 // 
                 this.currentSessionId = id;
                 this.updateUrlParams();
-                const session = this.sessionList.find(s => s.id === id);
+                const session = this.sessionList.find(s => s.id === id) || { messages: [] };
 
                 // 如果会话还没有加载详情，先加载详情
                 if (!session.messages || session.messages.length === 0) {

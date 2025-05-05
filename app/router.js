@@ -3,7 +3,6 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-
   router.post('/api/chat/message', controller.chat.sendMessage);
   router.post('/api/chat/createSession', controller.chat.createSession);
   router.post('/api/chat/updateSession', controller.chat.updateSession);

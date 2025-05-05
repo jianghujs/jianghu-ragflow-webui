@@ -15,28 +15,15 @@ class ChatController extends Controller {
     return `U_${deviceId}`;
   }
 
-  async index() {
-    const { ctx } = this;
-    await ctx.render('index.html');
-  }
-
-  // 获取聊天选项
-  async getChatOptions() {
-    const { ctx, app } = this;
-    const { chatOptions } = app.config.ragflow;
-    
-    ctx.body = { chatOptions };
-  }
-
   async createSession() {
     const { ctx, app } = this;
     const { baseUrl, apiKey } = app.config.ragflow;
     const deviceId = await this.getDeviceId();
     
     // 从请求中获取agentId，如果没有则使用默认值
-    const { agentId } = ctx.request.body;
+    const { agentId: chatId } = ctx.request.body;
 
-    const response = await axios.post(`${baseUrl}/chats/${agentId}/sessions`, {
+    const response = await axios.post(`${baseUrl}/chats/${chatId}/sessions`, {
       name: "新建聊天",
       user_id: deviceId
     }, {
@@ -54,9 +41,9 @@ class ChatController extends Controller {
   async updateSession() {
     const { ctx, app } = this;
     const { baseUrl, apiKey } = app.config.ragflow;
-    const { sessionId, md_sessionName, agentId } = ctx.request.body;
+    const { sessionId, md_sessionName, agentId: chatId } = ctx.request.body;
 
-    await axios.put(`${baseUrl}/chats/${agentId}/sessions/${sessionId}`, {
+    await axios.put(`${baseUrl}/chats/${chatId}/sessions/${sessionId}`, {
       name: md_sessionName
     }, {
       headers: {
@@ -71,10 +58,10 @@ class ChatController extends Controller {
   async deleteSession() {
     const { ctx, app } = this;
     const { baseUrl, apiKey } = app.config.ragflow;
-    const { sessionId, agentId } = ctx.request.body;
+    const { sessionId, agentId: chatId } = ctx.request.body;
     const deviceId = await this.getDeviceId();
 
-    await axios.delete(`${baseUrl}/chats/${agentId}/sessions`, {
+    await axios.delete(`${baseUrl}/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
@@ -94,10 +81,10 @@ class ChatController extends Controller {
     const shortDeviceId = deviceId.slice(-6);
     
     // 从请求中获取agentId，如果没有则使用默认值
-    const { agentId } = ctx.request.body;
+    const { agentId: chatId } = ctx.request.body;
     const { page = 1, page_size = 1000 } = ctx.query;
 
-    const response = await axios.get(`${baseUrl}/chats/${agentId}/sessions`, {
+    const response = await axios.get(`${baseUrl}/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`
       },
@@ -128,7 +115,7 @@ class ChatController extends Controller {
     const deviceId = await this.getDeviceId();
     
     // 从请求中获取agentId和sessionId
-    const { agentId, sessionId } = ctx.request.body;
+    const { agentId: chatId, sessionId } = ctx.request.body;
 
     if (!sessionId) {
       ctx.status = 400;
@@ -136,7 +123,7 @@ class ChatController extends Controller {
       return;
     }
 
-    const response = await axios.get(`${baseUrl}/chats/${agentId}/sessions`, {
+    const response = await axios.get(`${baseUrl}/chats/${chatId}/sessions`, {
       headers: {
         'Authorization': `Bearer ${apiKey}`
       },
@@ -164,11 +151,10 @@ class ChatController extends Controller {
   async handleSendMessage({ resStream }) {
     const { ctx, app } = this;
     const knex = app.knex;
-    const { message, sessionId, model, agentId } = ctx.request.body;
+    const { message, sessionId, model, agentId: chatId } = ctx.request.body;
 
     const ragflowConfig = app.config.ragflow;
     const { baseUrl, apiKey } = ragflowConfig;
-    const currentagentId = agentId || defaultagentId;
     
     ctx.set({
       'Content-Type': 'text/event-stream',
@@ -192,7 +178,7 @@ class ChatController extends Controller {
       requestBody.model = model;
     }
 
-    const response = await axios.post(`${baseUrl}/chats/${currentagentId}/completions`, 
+    const response = await axios.post(`${baseUrl}/chats/${chatId}/completions`, 
       requestBody, 
       { 
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, 

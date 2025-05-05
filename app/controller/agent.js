@@ -3,8 +3,6 @@ const axios = require('axios');
 const { PassThrough } = require('stream');
 
 class AgentController extends Controller {
-
-
   async index() {
     const { ctx } = this;
     await ctx.render('index.html');
@@ -15,9 +13,8 @@ class AgentController extends Controller {
     const { baseUrl, apiKey } = app.config.ragflow;
     const { agentId, userId } = ctx.request.body;
     try {
-      const response = await axios.post(`${baseUrl}/agents/${agentId}/sessions`, {
+      const response = await axios.post(`${baseUrl}/agents/${agentId}/sessions?user_id=${userId}`, {
         lang: "Chinese",
-        user_id: userId
       }, { 
         headers: { 
           'Authorization': `Bearer ${apiKey}`, 
@@ -26,6 +23,8 @@ class AgentController extends Controller {
       });
       
       const id = response.data.data.id;
+
+      
       this.ctx.body = { id };
     } catch (error) {
       this.ctx.logger.error(`创建会话失败: ${error.message}`, error);
@@ -39,9 +38,19 @@ class AgentController extends Controller {
     const { baseUrl, apiKey } = app.config.ragflow;
     const { sessionId, md_sessionName, agentId } = ctx.request.body;
 
+    const session = await this.getSessionDetail({ sessionId, agentId })
+
+    session.messages = JSON.parse(session.messages)
+    if (md_sessionName) {
+      const userMessageIndex = session.messages.findIndex(item => item.role === 'user');
+      if (userMessageIndex !== -1) {
+        session.messages[userMessageIndex].content = md_sessionName;
+      }
+    }
     try {
+      // TODO: 没有这个api
       await axios.put(`${baseUrl}/agents/${agentId}/sessions/${sessionId}`, {
-        name: md_sessionName
+        message: JSON.stringify(session.messages)
       }, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -103,18 +112,23 @@ class AgentController extends Controller {
         }
       });
 
-      // 处理响应数据，提取需要的会话信息
-      const sessionList = response.data.data.map(session => ({
-        id: session.id,
-        md_sessionName: session.message?.[0]?.content || "新建聊天",
-        create_time: session.create_time,
-        create_date: session.create_date,
-        dialog_id: agentId,
-        user_id: userId,
-        message: JSON.stringify(session.message || [])
-      }));
+      const data = response.data.data || []
       
-      this.ctx.body = { rows: sessionList };
+      // 处理响应数据，提取需要的会话信息
+      const sessionList = data.map(session => {
+        const userFirstMessage = session.messages.find(item => item.role === 'user')
+        const md_sessionName = userFirstMessage.content || "新建聊天"
+        return ({
+          id: session.id,
+          md_sessionName,
+          create_time: session.create_time,
+          create_date: session.create_date,
+          dialog_id: agentId,
+          user_id: userId,
+        })
+      });
+      
+      this.ctx.body = { rows: sessionList, total: data.length };
     } catch (error) {
       this.ctx.logger.error(`获取会话列表失败: ${error.message}`, error);
       this.ctx.status = 500;
@@ -212,15 +226,16 @@ class AgentController extends Controller {
       const session = response.data.data[0];
       
       // 转换会话对象为前端期望的格式
+      const userFirstMessage = session.messages.find(item => item.role === 'user')
       const sessionObj = {
         id: session.id,
-        md_sessionName: session.messages?.[0]?.content || "新建聊天",
+        md_sessionName: userFirstMessage.content || "新建聊天",
         create_time: session.create_time,
         create_date: session.create_date,
         dialog_id: agentId,
         user_id: userId,
         message: JSON.stringify(session.messages || []),
-        reference: '[]'
+        reference: JSON.stringify(session.dsl.reference || [])
       };
 
       this.ctx.body = sessionObj;
