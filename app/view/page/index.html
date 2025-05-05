@@ -482,8 +482,6 @@
             // 设置视口高度变量
             this.setViewportHeight();
 
-
-
             await this.getUserInfo();
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -508,21 +506,26 @@
                 }
             }
 
-
-            // 直接使用第一个专家
-            currentChat = this.chatOptions[0];
-
+            // 如果URL中有agentId，根据agentId查找对应的专家
+            if (agentIdFromUrl) {
+                currentChat = this.chatOptions.find(chat => chat.id === agentIdFromUrl);
+            }
+            
+            // 如果没有找到对应专家或URL中没有agentId，则使用第一个专家
+            if (!currentChat) {
+                currentChat = this.chatOptions[0];
+            }
 
             // 从URL获取sessionId参数
             if (sessionIdFromUrl) {
                 this.currentSessionId = sessionIdFromUrl;
             }
+            
             // 并行加载数据
             await Promise.all([
                 this.selectExpert(currentChat, false, modelFromUrl || modelFromStorage),
             ]);
             this.selectModel(modelFromUrl || modelFromStorage);
-
         },
         computed: {
             userId() {

@@ -3,10 +3,6 @@ const axios = require('axios');
 const { PassThrough } = require('stream');
 
 class AgentController extends Controller {
-  async index() {
-    const { ctx } = this;
-    await ctx.render('index.html');
-  }
 
   async createSession() {
     const { ctx, app } = this;
