@@ -1,6 +1,6 @@
-const { Controller } = require('egg');
+const { Service } = require('egg');
 
-class CommonController extends Controller {
+class CommonService extends Service {
   async getUserId() {
     const { ctx } = this;
     const { userId } = ctx.userInfo || {};
@@ -27,4 +27,4 @@ class CommonController extends Controller {
   }
 }
 
-module.exports = CommonController; 
+module.exports = CommonService; 

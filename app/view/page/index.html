@@ -664,10 +664,18 @@
 
             async createNewSession() {
                 try {
-                    const { id } = (await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/createSession`, {
-                        agentId: this.currentAgentId,
-                        userId: this.userId
-                    })).data;
+                    const { id } = (await window.jianghuAxios({
+                        data: {
+                            appData: {
+                                pageId: `${this.currentChat.isChat ? 'chat' : 'agent'}`,
+                                actionId: 'createSession',
+                                actionData: {
+                                    agentId: this.currentAgentId,
+                                    userId: this.userId
+                                }
+                            }
+                        }
+                    })).data.appData.resultData;
                     const sessionId = id;
                     const newSession = {
                         id: sessionId,
@@ -689,7 +697,18 @@
 
             async deleteSession(id) {
                 try {
-                    await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/deleteSession`, { sessionId: id, agentId: this.currentAgentId });
+                    await window.jianghuAxios({
+                        data: {
+                            appData: {
+                                pageId: `${this.currentChat.isChat ? 'chat' : 'agent'}`,
+                                actionId: 'deleteSession',
+                                actionData: {
+                                    sessionId: id,
+                                    agentId: this.currentAgentId
+                                }
+                            }
+                        }
+                    });
 
                     // 从sessionList中删除指定ID的会话
                     this.sessionList = this.sessionList.filter(session => session.id !== id);
@@ -711,8 +730,19 @@
                 await new Promise(resolve => setTimeout(resolve, 10));
                 const session = this.sessionList[index];
 
-                await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/updateSession`, { sessionId: session.id, agentId: this.currentAgentId, md_sessionName: session.md_sessionName });
-
+                await window.jianghuAxios({
+                    data: {
+                        appData: {
+                            pageId: `${this.currentChat.isChat ? 'chat' : 'agent'}`,
+                            actionId: 'updateSession',
+                            actionData: {
+                                sessionId: session.id,
+                                agentId: this.currentAgentId,
+                                md_sessionName: session.md_sessionName
+                            }
+                        }
+                    }
+                });
             },
 
             selectSession(id) {
@@ -764,15 +794,23 @@
                 }
 
                 try {
-                    const response = await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/getSessionList`, {
-                        userId: this.userId,
-                        agentId: this.currentAgentId,
-                        limit: this.pageSize,
-                        offset: (this.sessionPage - 1) * this.pageSize,
-                        orderBy: [{ column: 'create_time', order: 'desc' }]
+                    const response = await window.jianghuAxios({
+                        data: {
+                            appData: {
+                                pageId: `${this.currentChat.isChat ? 'chat' : 'agent'}`,
+                                actionId: 'getSessionList',
+                                actionData: {
+                                    userId: this.userId,
+                                    agentId: this.currentAgentId,
+                                    limit: this.pageSize,
+                                    offset: (this.sessionPage - 1) * this.pageSize,
+                                    orderBy: [{ column: 'create_time', order: 'desc' }]
+                                }
+                            }
+                        }
                     });
 
-                    const { deviceName, rows: sessionList, count: total } = response.data;
+                    const { deviceName, rows: sessionList, count: total } = response.data.appData.resultData;
 
                     this.deviceName = deviceName;
 
@@ -859,12 +897,20 @@
                 this.isSessionDetailLoading = true;
                 this.userQuestion = [];
                 try {
-                    const response = await axios.post(`/api/${this.currentChat.isChat ? 'chat' : 'agent'}/getSessionDetail`, {
-                        userId: this.userId,
-                        agentId: this.currentAgentId,
-                        id: sessionId
+                    const response = await window.jianghuAxios({
+                        data: {
+                            appData: {
+                                pageId: `${this.currentChat.isChat ? 'chat' : 'agent'}`,
+                                actionId: 'getSessionDetail',
+                                actionData: {
+                                    userId: this.userId,
+                                    agentId: this.currentAgentId,
+                                    sessionId
+                                }
+                            }
+                        }
                     });
-                    const sessionDetail = response.data || {}
+                    const sessionDetail = response.data.appData.resultData || {}
 
                     if (sessionDetail.reference) {
                         sessionDetail.reference = sessionDetail.reference.filter(item => item.chunks.length > 0)
