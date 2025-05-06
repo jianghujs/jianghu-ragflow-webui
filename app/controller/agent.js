@@ -31,29 +31,42 @@ class AgentController extends Controller {
 
   async updateSession() {
     const { ctx, app } = this;
+    const knex = app.knex;
     const { baseUrl, apiKey } = app.config.ragflow;
-    const { sessionId, md_sessionName, agentId } = ctx.request.body;
+    const { sessionId, md_sessionName, agentId, userId } = ctx.request.body;
 
-    const session = await this.getSessionDetail({ sessionId, agentId })
-
-    session.messages = JSON.parse(session.messages)
-    if (md_sessionName) {
-      const userMessageIndex = session.messages.findIndex(item => item.role === 'user');
-      if (userMessageIndex !== -1) {
-        session.messages[userMessageIndex].content = md_sessionName;
-      }
-    }
-    try {
-      // TODO: 没有这个api
-      await axios.put(`${baseUrl}/api/v1/agents/${agentId}/sessions/${sessionId}`, {
-        message: JSON.stringify(session.messages)
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
+    const userInfo = await ctx.service.common.getUserInfo();
+    // raglfow agent session没有更新的api，使用扩展表来实现
+    const updateSessionHistory = async () => {
+      try {
+        const existingSession = await knex('session_history_title_update').where('sessionId', sessionId).first();
+        if (existingSession) {
+          await knex('session_history_title_update').update({
+            title: md_sessionName,
+            operation: 'update',
+            operationByUserId: userId,
+            operationByUser: userInfo.username,
+            operationAt: new Date().toISOString()
+          }).where('sessionId', sessionId);
+        } else {
+          await knex('session_history_title_update').insert({
+            sessionId: sessionId,
+            title: md_sessionName,
+            operation: 'insert',
+            operationByUserId: userId,
+            operationByUser: userInfo.username,
+            operationAt: new Date().toISOString()
+          });
         }
-      });
+      } catch (error) {
+        this.ctx.logger.error(`更新会话历史失败: ${error.message}`, error);
+        throw error;
+      }
+    };
 
+    await updateSessionHistory();
+    try {
+     
       this.ctx.body = { id: sessionId };
     } catch (error) {
       this.ctx.logger.error(`更新会话失败: ${error.message}`, error);
@@ -89,7 +102,7 @@ class AgentController extends Controller {
   async getSessionList() {
     const { ctx, app } = this;
     const { baseUrl, apiKey } = app.config.ragflow;
-    
+    const knex = app.knex
     // 从请求中获取agentId参数
     const { agentId, userId } = ctx.request.body;
     const { page = 1, page_size = 1000 } = ctx.query;
@@ -110,11 +123,14 @@ class AgentController extends Controller {
       });
 
       const data = response.data.data || []
+
+      const sessionIdList = data.map(item=> item.id)
+      const sessionTitleList = await knex('session_history_title_update').whereIn('sessionId', sessionIdList).select()
       
       // 处理响应数据，提取需要的会话信息
       const sessionList = data.map(session => {
-        const userFirstMessage = session.messages.find(item => item.role === 'user')
-        const md_sessionName = userFirstMessage.content || "新建聊天"
+        const sessionTitleItem = sessionTitleList.find(item => item.sessionId === session.id) || {}
+        const md_sessionName = sessionTitleItem.title || "新建聊天"
         return ({
           id: session.id,
           md_sessionName,

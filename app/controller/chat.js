@@ -88,7 +88,7 @@ class ChatController extends Controller {
       name: session.name,
       create_time: session.create_time,
       create_date: session.create_date,
-      md_sessionName: session.messages.find(message => message.role === 'user')?.content
+      md_sessionName: session.name,
     }));
     
     this.ctx.body = { deviceName: `游客${userId}`, rows: sessionList };
