@@ -360,8 +360,6 @@
                     </div>
                 </div>
             </div>
-            
-       
          
             <!-- 引用内容浮层卡片 -->
             <div v-if="showReferenceTooltip" class="reference-tooltip reference-modal bg-white" :style="referenceTooltipStyle">
@@ -414,65 +412,39 @@
                 deviceName: '',
                 newMessage: '',
                 currentSessionId: null,
-                theme: 'light', // 默认亮色主题
+                theme: 'light',
                 isLoading: false,
-                controller: null, // 用于控制 fetchEventSource 请求
-                currentModel: null, // 当前模型
-                currentMessage: '', // 当前消息内容
-                showLoginDialog: false, // 控制登录弹窗显示
-
+                controller: null,
+                currentModel: null,
+                currentMessage: '',
+                showLoginDialog: false,
                 sessionList: [],
-                noteList: [], // 笔记列表
-                isNoteListLoading: false, // 笔记列表加载状态
-                totalNotes: 0, // 笔记总数
-                showNoteDialog: false, // 控制笔记对话框显示
-                currentNote: {}, // 当前编辑的笔记
-                showCreateNoteDialog: false, // 创建笔记对话框显示状态
-                createNoteData: {}, // 创建笔记的数据
-
-                currentReferenceContent: '', // 当前引用内容
+                currentReferenceContent: '',
                 currentChunk: {},
-                sidebarVisible: window.innerWidth >= 769 ? true : false, // 控制侧边栏在移动设备上的显示
-                chatOptions: JSON.parse(String.raw`<$ ctx.app.config.ragflow.chatOptions | dump| safe $>`), // 专家选项
-
-                currentChat: { models: [] }, // 当前聊天专家
-
-                isSessionListLoading: true, // 会话列表加载状态
-                isSessionDetailLoading: false, // 会话详情加载状态
-                showScrollToBottomButton: false, // 滚动到底部按钮显示状态
-                sidebarCollapsed: false, // 侧边栏折叠状态
-
-                // 引用浮层相关数据
+                sidebarVisible: window.innerWidth >= 769 ? true : false,
+                chatOptions: JSON.parse(String.raw`<$ ctx.app.config.ragflow.chatOptions | dump| safe $>`),
+                currentChat: { models: [] },
+                isSessionListLoading: true,
+                isSessionDetailLoading: false,
+                showScrollToBottomButton: false,
+                sidebarCollapsed: false,
                 showReferenceTooltip: false,
                 referenceTooltipStyle: {
-                    top: '0px',
-                    left: '0px'
+                  top: '0px',
+                  left: '0px'
                 },
                 isReferenceLoading: false,
-
-                knowledgeBaseList: [], // 知识库列表
-                isKnowledgeBaseListLoading: true, // 知识库列表加载状态
-
-                showAgentDropdown: false, // 专家下拉菜单显示状态
-                sourceSidebarVisible: window.innerWidth >= 769 ? true : false, // 知识库来源选择侧边栏显示状态
-                selectedKnowledgeBases: [], // 选中的知识库列表
-
-                systemPrompt: '土明', // 系统提示词
-
-                // 猜你想问
+                showAgentDropdown: false,
+                sourceSidebarVisible: window.innerWidth >= 769 ? true : false,
+                selectedKnowledgeBases: [],
+                systemPrompt: '',
                 userQuestion: [],
-                isUserQuestionLoading: false, // 猜你想问加载状态
-
-                // 分页加载相关
-                sessionPage: 1, // 会话列表当前页码
-                notePage: 1, // 笔记列表当前页码
-                pageSize: 15, // 每页显示条数
-                hasMoreSessions: true, // 是否还有更多会话
-                hasMoreNotes: true, // 是否还有更多笔记
-                isLoadingMoreSessions: false, // 加载更多会话状态
-                isLoadingMoreNotes: false, // 加载更多笔记状态
-
-                userInfo: {}, // 用户信息
+                isUserQuestionLoading: false,
+                sessionPage: 1,
+                pageSize: 15,
+                hasMoreSessions: true,
+                isLoadingMoreSessions: false,
+                userInfo: {},
             };
         },
         async created() {
@@ -1142,16 +1114,11 @@
 
             // 从本地存储加载主题设置
             loadTheme() {
-                const savedTheme = localStorage.getItem('sessionTheme');
-                this.theme = savedTheme ? savedTheme : 'light';
-                this.$vuetify.theme.dark = this.theme === 'dark';
-                document.documentElement.setAttribute('data-theme', this.theme);
-
-                if (this.theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                }
+                const savedTheme = localStorage.getItem('sessionTheme') || 'light';
+                this.theme = savedTheme;
+                this.$vuetify.theme.dark = savedTheme === 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.documentElement.classList[savedTheme === 'dark' ? 'add' : 'remove']('dark');
             },
 
             // 选择模型
@@ -1420,16 +1387,13 @@
 
             handleScroll() {
                 const container = this.$refs.messagesContainer;
-                if (container) {
-                    // 如果消息内容未超过一屏，不显示按钮
-                    if (container.scrollHeight >= container.clientHeight) {
-
-                        // 否则，根据滚动位置决定是否显示按钮
-                        setTimeout(() => {
-                            this.showScrollToBottomButton =
-                                (container.scrollHeight - container.scrollTop - container.clientHeight) > 200;
-                        }, 1000);
-                    }
+                if (!container) return;
+                
+                if (container.scrollHeight >= container.clientHeight) {
+                  setTimeout(() => {
+                    this.showScrollToBottomButton = 
+                      (container.scrollHeight - container.scrollTop - container.clientHeight) > 200;
+                  }, 100);
                 }
             },
 
