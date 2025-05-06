@@ -4,44 +4,36 @@ const { PassThrough } = require('stream');
 
 class ChatService extends Service {
 
-  async createSession(actionData) {
-    const { agentId: chatId, userId } = actionData;
+  async createSession({ agentId: chatId, userId }) {
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
 
     try {
-      const response = await axios.post(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
-        name: "新建聊天",
-        user_id: userId
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.post(
+        `${baseUrl}/api/v1/chats/${chatId}/sessions`,
+        { name: "新建聊天", user_id: userId },
+        { headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }}
+      );
 
-      const { id } = response.data.data;
-      return { id };
+      return { id: response.data.data.id };
     } catch (error) {
       this.ctx.logger.error(`创建会话失败: ${error.message}`, error);
       throw new Error('创建会话失败');
     }
   }
 
-  async updateSession(actionData) {
-    const { sessionId, md_sessionName, chatId } = actionData;
+  async updateSession({ sessionId, md_sessionName, agentId: chatId }) {
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
-    
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
+
     try {
-      await axios.put(`${baseUrl}/api/v1/chats/${chatId}/sessions/${sessionId}`, {
-        name: md_sessionName
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      await axios.put(
+        `${baseUrl}/api/v1/chats/${chatId}/sessions/${sessionId}`,
+        { name: md_sessionName },
+        { headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }}
+      );
 
       return { id: sessionId };
     } catch (error) {
@@ -50,20 +42,15 @@ class ChatService extends Service {
     }
   }
 
-  async deleteSession(actionData) {
-    const { sessionId, chatId } = actionData;
+  async deleteSession({ sessionId, chatId }) {
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
 
     try {
       await axios.delete(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        data: {
-          ids: [sessionId]
-        }
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        data: { ids: [sessionId] }
       });
 
       return {};
@@ -73,26 +60,17 @@ class ChatService extends Service {
     }
   }
 
-  async getSessionList(actionData) {
-    const { agentId: chatId, userId, page = 1, page_size = 1000 } = actionData;
+  async getSessionList({ agentId: chatId, userId, page = 1, page_size = 1000 }) {
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
 
     try {
       const response = await axios.get(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`
-        },
-        params: {
-          user_id: userId,
-          orderby: 'create_time',
-          desc: true,
-          page,
-          page_size
-        }
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        params: { user_id: userId, orderby: 'create_time', desc: true, page, page_size }
       });
 
-      // 只返回必要的会话信息
       const sessionList = response.data.data.map(session => ({
         id: session.id,
         name: session.name,
@@ -108,10 +86,10 @@ class ChatService extends Service {
     }
   }
 
-  async getSessionDetail(actionData) {
-    const { agentId: chatId, sessionId, userId } = actionData;
+  async getSessionDetail({ agentId: chatId, sessionId, userId }) {
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
 
     if (!sessionId) {
       throw new Error('sessionId is required');
@@ -119,68 +97,55 @@ class ChatService extends Service {
 
     try {
       const response = await axios.get(`${baseUrl}/api/v1/chats/${chatId}/sessions`, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`
-        },
-        params: {
-          user_id: userId,
-          id: sessionId
-        }
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        params: { user_id: userId, id: sessionId }
       });
 
-      const data = response.data.data[0] || {};
-      return data;
+      return response.data.data[0] || {};
     } catch (error) {
       this.ctx.logger.error(`获取会话详情失败: ${error.message}`, error);
       throw new Error('获取会话详情失败');
     }
   }
 
-  async sendMessage(actionData) {
+  async sendMessage({ message, sessionId, model, agentId: chatId, userId }) {
     const resStream = new PassThrough();
-
-    const { message, sessionId, model, agentId: chatId, userId } = actionData;
     const { app } = this;
-    const { baseUrl, apiKey } = app.config.ragflow;
-    
+    const { baseUrl } = app.config.ragflow;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
+
     this.ctx.set({
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive'
     });
 
-    // 创建请求体，如果model参数存在，则添加到llm_config中
     const requestBody = { 
       lang: "Chinese", 
-      question: `${message}`, 
+      question: message, 
       stream: true, 
       session_id: sessionId, 
       user_id: userId, 
       sync_dsl: true 
     };
     
-    // 如果指定了模型，添加model参数
     if (model) {
       requestBody.model = model;
     }
 
     try {
-      const response = await axios.post(`${baseUrl}/api/v1/chats/${chatId}/completions`, 
+      const response = await axios.post(
+        `${baseUrl}/api/v1/chats/${chatId}/completions`, 
         requestBody, 
         { 
           headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, 
           responseType: 'stream', 
           timeout: 180 * 1000 
-        });
+        }
+      );
         
-      response.data.on('data', chunk => {
-        const text = chunk.toString('utf8');
-        resStream?.write(text);
-      });
-      
-      response.data.on('end', () => {
-        resStream?.end();
-      });
+      response.data.on('data', chunk => resStream?.write(chunk.toString('utf8')));
+      response.data.on('end', () => resStream?.end());
     } catch (error) {
       this.ctx.logger.error(`发送消息失败: ${error.message}`, error);
       resStream?.write(JSON.stringify({ error: '发送消息失败' }));

@@ -18,8 +18,9 @@ class AgentController extends Controller {
   async handleSendMessage({ resStream }) {
     const { ctx, app } = this;
     const { message, sessionId, beginParams } = ctx.request.body;
-    const { baseUrl, apiKey } = app.config.ragflow;
+    const { baseUrl } = app.config.ragflow;
     const { agentId, userId } = ctx.request.body;
+    const apiKey = await this.ctx.service.common.getChatApiKey(agentId);
 
     ctx.set({
       'Content-Type': 'text/event-stream',

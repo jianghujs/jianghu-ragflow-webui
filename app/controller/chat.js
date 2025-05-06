@@ -21,7 +21,8 @@ class ChatController extends Controller {
     const { message, sessionId, model, agentId: chatId, userId } = ctx.request.body;
 
     const ragflowConfig = app.config.ragflow;
-    const { baseUrl, apiKey } = ragflowConfig;
+    const { baseUrl } = ragflowConfig;
+    const apiKey = await this.ctx.service.common.getChatApiKey(chatId);
     
     ctx.set({
       'Content-Type': 'text/event-stream',

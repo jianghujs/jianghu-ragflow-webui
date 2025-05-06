@@ -6,8 +6,19 @@ module.exports = appInfo => {
 
   return {
     ragflow: {
-      mingdingBaseUrl: 'https://appdev.eggjs.tech',
-      baseUrl: 'http://127.0.0.1:9380/api/v1',
+      baseUrl: 'https://xxx',
+      apiKey: 'ragflow-xxx',
+      chatOptions: [
+        {
+          id: 'd380f780150411f0b2be0242c0a8b006',
+          name: '江湖AI助手',
+          description: '专业解答，江湖AI问题',
+          hotTopics: [],
+          models: [],
+          systemPrompts: [],
+          isChat: false,
+        },
+      ],
     },
     static: {
       maxAge: 0,
@@ -32,7 +43,7 @@ module.exports = appInfo => {
           port: 3306,
           user: 'root',
           password: '123456',
-          database: 'ragflow_xiaoxun'
+          database: 'ragflow_webui'
         },
         pool: { min: 0, max: 10 },
         acquireConnectionTimeout: 30000
