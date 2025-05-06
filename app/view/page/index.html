@@ -1556,7 +1556,7 @@
             previewDocument(chunk) {
                 this.sourceSidebarVisible = true;
                 const ext = chunk.document_name.includes('.') ? chunk.document_name.split('.').pop() : 'pdf';
-                window.open(`<$ ctx.app.config.ragflow.baseUrl $>/document/${chunk.id}?ext=${ext}&prefix=file`, '_blank');
+                window.open(`<$ ctx.app.config.ragflow.baseUrl $>/document/${chunk.document_id}?ext=${ext}&prefix=document`, '_blank');
             }
         },
         mounted() {

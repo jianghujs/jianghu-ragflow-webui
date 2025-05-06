@@ -532,6 +532,108 @@
     return window.fetchEventSource(baseURL, fetchOptions);
   };
 
+  /**
+   * 封装fetchEventSource，使用与jianghuAxios一致的传参方式，并支持application/json响应
+   * @param {Object} options - 配置选项
+   * @param {Object} options.data - 请求数据，包含appData
+   * @param {Object} options.signal - AbortController信号
+   * @param {Function} options.onmessage - 消息处理函数
+   * @param {Function} options.onerror - 错误处理函数
+   * @param {Function} options.onclose - 关闭处理函数
+   * @returns {Object} - 返回控制对象
+   */
+  window.jianghuAxiosSse = function(options) {
+    const data = options.data || {};
+    if (!data.appData) { data.appData = {}; }
+    
+    // 与jianghuAxios相同的包装逻辑
+    const packageId = `${Date.now()}_${_.random(1000000, 9999999)}`;
+    if (!data.packageId) { data.packageId = packageId; }
+    const packageType = 'httpRequest';
+    if (!data.packageType) { data.packageType = packageType; }
+    
+    const { pageId, actionId } = data.appData;
+    const resourceId = `${pageId}.${actionId}`;
+    
+    // 获取必要参数
+    const { appId, userAgent } = window.appInfo;
+    if (!data.appData.appId) { data.appData.appId = appId; }
+    if (!data.appData.userAgent) { data.appData.userAgent = userAgent; }
+    
+    // 获取认证令牌
+    const authToken = localStorage.getItem(`${window.appInfo.appId}_authToken`);
+    if (!data.appData.authToken) { data.appData.authToken = authToken; }
+    
+    // 构建请求URL，与jianghuAxios一致
+    const url = `/${appId}/resource?resourceId=${resourceId}`;
+    
+    // 使用XMLHttpRequest手动处理流
+    const controller = {
+      abort: () => { xhr.abort(); }
+    };
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Accept', 'application/json, text/event-stream');
+    xhr.responseType = 'text';  // 使用text而不是stream
+    
+    // 处理中断信号
+    if (options.signal) {
+      options.signal.addEventListener('abort', () => {
+        xhr.abort();
+      });
+    }
+    
+    let buffer = '';
+    
+    // 接收进度事件处理数据
+    xhr.onprogress = function(event) {
+      if (xhr.status === 200) {
+        let newData = xhr.responseText.substring(buffer.length);
+        buffer = xhr.responseText;
+        
+        if (newData) {
+          // 按行分割处理
+          debugger
+          newData = JSON.parse(newData);
+          newData = (newData.appData && newData.appData.resultData) || '';
+          const lines = newData.split('\n');
+          
+          for (const line of lines) {
+            if (line.trim() !== '') {
+              options.onmessage?.({ data: line });
+            }
+          }
+        }
+      }
+    };
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        options.onclose?.();
+      } else {
+        options.onerror?.(new Error(`Request failed with status ${xhr.status}`));
+        options.onclose?.();
+      }
+    };
+    
+    xhr.onerror = function(error) {
+      options.onerror?.(error || new Error('Network error'));
+      options.onclose?.();
+    };
+    
+    xhr.ontimeout = function() {
+      options.onerror?.(new Error('Request timeout'));
+      options.onclose?.();
+    };
+    
+    // 发送请求
+    xhr.send(JSON.stringify(data));
+    
+    return controller;
+  };
+
 })();
 </script>
 <!-- <<<<<<<<<<<<< jianghuAxios.html -->
