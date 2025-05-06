@@ -49,7 +49,7 @@ module.exports = appInfo => {
           name: '江湖AI助手',
           description: '专业解答，江湖AI问题',
           hotTopics: [],
-          models: ['Deepseek-V3', 'Deepseek-R1', 'Gemini2-Flash', 'Gemini2.5-Pro'],
+          models: [],
           systemPrompts: [],
           knowledgeBaseId: '06f35b361f8b11f0a9786d2c3244c3ba',
         }
