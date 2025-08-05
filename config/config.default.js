@@ -11,13 +11,13 @@ const eggJianghuPath = path.join(eggJianghuPathTemp, '../');
 module.exports = appInfo => {
   assert(appInfo);
 
-  const appId = 'jianghu-webui';
+  const appId = 'ragflow-tudi';
   const uploadDir = path.join(appInfo.baseDir, 'upload');
   const downloadBasePath = `/${appId}/upload`;
 
   return {
     appId,
-    appTitle: 'jianghu-ragflow-webui',
+    appTitle: '土地应用',
     appLogo: `${appId}/public/img/logo.png`,
     appType: 'single',
     appDirectoryLink: '/',
@@ -40,19 +40,44 @@ module.exports = appInfo => {
       ],
     },
     ragflow: {
-      baseUrl: 'https://xxx.com',
-      apiKey: 'ragflow-xxxx',
+      baseUrl: 'https://ai02.jhxf.org',
+      apiKey: 'ragflow-A1YTRjZGU4ZjhkZDExZWY4YTQ0MDI0Mm',
 
       chatOptions: [
         {
-          id: 'd380f780150411f0b2be0242c0a8b006',
-          name: '江湖AI助手',
-          description: '专业解答，江湖AI问题',
+          id: 'a07fad5a03f611f08c390242ac180006',
+          name: '土地法规机器人',
+          description: '专业解答，土地法规问题',
+          hotTopics: [
+            "农用地有什么政策",
+            "耕地有什么政策",
+            "建设用地有什么政策",
+            "土地征收有什么政策",
+          ],
+          models: [],
+          isChat: true,
+        },
+        {
+          id: '1ba3b7fc066711f09ebf0242ac190006',
+          name: '土地公告机器人',
+          description: '专业解答，土地公告问题',
+          hotTopics: [
+            "查询八里桥地块信息",
+            "查询深圳地块信息",
+            "查询上海地块信息",
+            "查询广州地块信息",
+          ],
+          models: [],
+          isChat: true,
+        },
+        {
+          id: '10e60d260ec111f0b9030242c0a8a006',
+          name: '土地统计机器人',
+          description: '专业解答，土地统计问题',
           hotTopics: [],
           models: [],
-          systemPrompts: [],
-          knowledgeBaseId: '06f35b361f8b11f0a9786d2c3244c3ba',
-        }
+          isChat: false,
+        },
       ],
     },
     view: {

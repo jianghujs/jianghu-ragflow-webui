@@ -22,7 +22,7 @@ class CommonService extends Service {
       .digest('hex')
       .substring(8, 24);  // 取中间16位
     
-    return `U_${deviceId}`;
+    return `tudi_${deviceId}`;
   }
 
   async getUserInfo() {
